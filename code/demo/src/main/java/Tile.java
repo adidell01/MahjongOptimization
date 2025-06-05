@@ -37,7 +37,7 @@ public class Tile {
                 this.type = tileType.WHITE;
                 break;
             default:
-                throw new IllegalArgumentException("INVALID TYPE FOR TILECRATION");
+                throw new IllegalArgumentException("INVALID TYPE FOR TILECREATION");
         }
         this.val = val;
         this.uid = this.uidGenerator;
@@ -46,5 +46,12 @@ public class Tile {
 
     public int getUid() {
         return this.uid;
+    }
+
+    @Override
+    public String toString(){
+        if(this.type == tileType.BAMBOO || this.type == tileType.CHARACTER || this.type == tileType.PIN)
+            return this.type.name() + " " + this.val;
+        return this.type.name();
     }
 }
