@@ -31,6 +31,110 @@ public class Hand {
          *          groups of triplets or sequences (color always needs to be the same across a group)
          *          and a pair. If necessary, add methods and fields to this class.
          */
-        return 0;
+        int minShanten = 8; // Maximum shanten value for a standard hand is 8
+        if (this.hand.size() != 14) {
+            throw new IllegalArgumentException("Hand must contain exactly 14 tiles.");
+        }
+
+        LinkedList<Tile> cloneHandGroups = (LinkedList<Tile>) this.hand.clone(); // Create a copy of the hand to avoid modifying the original
+        LinkedList<Tile> cloneHandSequences = (LinkedList<Tile>) this.hand.clone(); // Create a copy of the hand for sequences
+        int triplets = countTriplets(cloneHandGroups);
+        int pairs = countPairs(cloneHandGroups);
+        int groups = triplets + pairs;
+
+        int sequences = countSequences(cloneHandSequences);
+
+        System.out.println("Triplets: " + triplets);
+        System.out.println("Pairs: " + pairs); 
+        System.out.println("Sequences: " + sequences);
+        /*
+         * We need to make sure that the tiles are not counted multiple times.
+         * And that the optimal distribution of triplets, pairs, and sequences is considered.
+         */
+        return minShanten;
     }
+
+    /*
+     * This method counts the number of triplets in the hand disregarding pairs and sequences.
+     * A triplet consists of three tiles of the same type and value.
+     */
+    public int countTriplets(LinkedList<Tile> hand) {
+        int triplets = 0;
+
+        for (int i = 0; i < hand.size(); i++) {
+            Tile tile1 = hand.get(i);
+            for (int j = i + 1; j < hand.size(); j++) {
+                Tile tile2 = hand.get(j);
+                if (tile1.getType() == tile2.getType() && tile1.getVal() == tile2.getVal()) {
+                    //found a pair
+                    for (int k = j + 1; k < hand.size(); k++) {
+                        Tile tile3 = hand.get(k);
+                        if (tile1.getType() == tile3.getType() && tile1.getVal() == tile3.getVal()) {
+                            // Found a triplet
+                            triplets++;
+                            hand.remove(k); // Remove the third tile to avoid counting it again
+                            hand.remove(j); // Remove the second tile to avoid counting it again
+                            hand.remove(i); // Remove the first tile to avoid counting it again
+                            break; // Exit the loop since we found a triplet
+                        }
+                    }  
+                }
+            }
+        }
+        return triplets;
+    }
+
+    /*
+     * This method counts the number of pairs in the hand disregarding sequences
+     * and assuming all existing triplets have already been found.
+     * A pair consists of two tiles of the same type and value.
+     */
+    public int countPairs(LinkedList<Tile> hand) {
+        int pairs = 0;
+
+        for (int i = 0; i < hand.size(); i++) {
+            Tile tile1 = hand.get(i);
+            for (int j = i + 1; j < hand.size(); j++) {
+                Tile tile2 = hand.get(j);
+                if (tile1.getType() == tile2.getType() && tile1.getVal() == tile2.getVal()) {
+                    // Found a pair
+                    pairs++;
+                    hand.remove(j); // Remove the second tile to avoid counting it again
+                    hand.remove(i); // Remove the first tile to avoid counting it again
+                    break; // Exit the loop since we found a pair and there are no triplets left
+                }
+            }
+        }
+        return pairs;
+    }
+
+    public int countSequences(LinkedList<Tile> hand) {
+        int sequences = 0;
+
+        for (int i = 0; i < hand.size(); i++) {
+            Tile tile1 = hand.get(i);
+            if (tile1.getType() == tileType.BAMBOO || tile1.getType() == tileType.CHARACTER || tile1.getType() == tileType.PIN) {
+                for (int j = i + 1; j < hand.size(); j++) {
+                    Tile tile2 = hand.get(j);
+                    if (tile2.getType() == tile1.getType() && Math.abs(tile2.getVal() - tile1.getVal()) == 1) {
+                        for (int k = j + 1; k < hand.size(); k++) {
+                            Tile tile3 = hand.get(k);
+                            if (tile3.getType() == tile1.getType() && Math.abs(tile3.getVal() - tile1.getVal()) == 2 && Math.abs(tile3.getVal() - tile2.getVal()) == 1 ||
+                                tile3.getType() == tile1.getType() && Math.abs(tile3.getVal() - tile2.getVal()) == 2 && Math.abs(tile3.getVal() - tile1.getVal()) == 1) {
+                                // Found a sequence
+                                sequences++;
+                                hand.remove(k); // Remove the third tile to avoid counting it again
+                                hand.remove(j); // Remove the second tile to avoid counting it again
+                                hand.remove(i); // Remove the first tile to avoid counting it again
+                                break; // Exit the loop since we found a sequence
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return sequences;
+    }
+
 }

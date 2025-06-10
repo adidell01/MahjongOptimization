@@ -44,6 +44,14 @@ public class Tile {
         this.uidGenerator++;
     }
 
+    public int getVal() {
+        return this.val;
+    }
+
+    public tileType getType() {
+        return this.type;
+    }
+
     public int getUid() {
         return this.uid;
     }
