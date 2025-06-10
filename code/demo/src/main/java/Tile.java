@@ -4,6 +4,11 @@ public class Tile {
     private int uid;
     private static int uidGenerator = 0;
 
+    private boolean isSequence2 = false;
+    private boolean isSequence3 = false;
+    private boolean isPair = false;
+    private boolean isTriplet = false;
+
     public Tile(int type, int val){
         switch (type) {
             case 0:
@@ -54,6 +59,41 @@ public class Tile {
 
     public int getUid() {
         return this.uid;
+    }
+
+    public void setSequence2(boolean isSequence2) {
+        this.isSequence2 = isSequence2;
+    }
+    public boolean isSequence2() {
+        return this.isSequence2;
+    }
+
+    public void setSequence3(boolean isSequence3) {
+        this.isSequence3 = isSequence3;
+    }
+    public boolean isSequence3() {
+        return this.isSequence3;
+    }
+
+    public void setPair(boolean isPair) {
+        this.isPair = isPair;
+    }
+    public boolean isPair() {
+        return this.isPair;
+    }
+
+    public void setTriplet(boolean isTriplet) {
+        this.isTriplet = isTriplet;
+    }
+    public boolean isTriplet() {
+        return this.isTriplet;
+    }
+
+    public void resetFlags() {
+        this.isSequence2 = false;
+        this.isSequence3 = false;
+        this.isPair = false;
+        this.isTriplet = false;
     }
 
     @Override

@@ -37,12 +37,13 @@ public class Hand {
         if (this.hand.size() != 14) {
             throw new IllegalArgumentException("Hand must contain exactly 14 tiles.");
         }
+        // We clone the hand to avoid modifying the original hand while counting groups and sequences
+        LinkedList<Tile> cloneHandGroups = (LinkedList<Tile>) this.hand.clone(); 
+        LinkedList<Tile> cloneHandSequences = (LinkedList<Tile>) this.hand.clone();
 
-        LinkedList<Tile> cloneHandGroups = (LinkedList<Tile>) this.hand.clone(); // Create a copy of the hand to avoid modifying the original
-        LinkedList<Tile> cloneHandSequences = (LinkedList<Tile>) this.hand.clone(); // Create a copy of the hand for sequences
+
         int triplets = countTriplets(cloneHandGroups);
         int pairs = countPairs(cloneHandGroups);
-        int groups = triplets + pairs;
 
         int sequences3 = countSequences3(cloneHandSequences);
         int sequences2 = countSequences2(cloneHandSequences);
@@ -53,10 +54,25 @@ public class Hand {
         System.out.println("Sequences3: " + sequences3);
         System.out.println("Sequences2: " + sequences2);
         System.out.println("Sequence Candidates: " + this.SequenceCandidates);
-        /*
-         * We need to make sure that the tiles are not counted multiple times.
-         * And that the optimal distribution of triplets, pairs, and sequences is considered.
-         */
+
+        Set<Tile> conflicts = new java.util.HashSet<>();
+        // Check for Candidate conflicts
+        for (Tile myTile : this.GroupCandidates) {
+            if (this.SequenceCandidates.contains(myTile)) {
+                // If a tile is both in Group and Sequence Candidates, we need to handle it
+                // For now, we just print a warning
+                System.out.println("Warning: Tile " + myTile + " is in both Group and Sequence Candidates.");
+                conflicts.add(myTile);
+            }
+        }
+
+        for (Tile myTile : conflicts) {
+            /*
+             * TODO: Handle conflicts between Group and Sequence Candidates.
+             * For now, we just print a warning.
+             */
+        }
+        
         return minShanten;
     }
 
@@ -81,6 +97,9 @@ public class Hand {
                             this.GroupCandidates.add(tile1); // Add the triplet to candidates
                             this.GroupCandidates.add(tile2); // Add the triplet to candidates
                             this.GroupCandidates.add(tile3); // Add the triplet to candidates
+                            tile1.setTriplet(true);
+                            tile2.setTriplet(true);
+                            tile3.setTriplet(true);
                             hand.remove(k); // Remove the third tile to avoid counting it again
                             hand.remove(j); // Remove the second tile to avoid counting it again
                             hand.remove(i); // Remove the first tile to avoid counting it again
@@ -110,6 +129,8 @@ public class Hand {
                     pairs++;
                     this.GroupCandidates.add(tile1); // Add the pair to candidates
                     this.GroupCandidates.add(tile2); // Add the pair to candidates
+                    tile1.setPair(true);
+                    tile2.setPair(true);
                     hand.remove(j); // Remove the second tile to avoid counting it again
                     hand.remove(i); // Remove the first tile to avoid counting it again
                     break; // Exit the loop since we found a pair and there are no triplets left
@@ -119,6 +140,10 @@ public class Hand {
         return pairs;
     }
 
+    /*
+     * This method counts the number of sequences of three tiles in the hand.
+     * A sequence consists of three tiles of the same type with consecutive values.
+     */
     public int countSequences3(LinkedList<Tile> hand) {
         int sequences = 0;
 
@@ -137,6 +162,9 @@ public class Hand {
                                 this.SequenceCandidates.add(tile1); // Add the sequence to candidates
                                 this.SequenceCandidates.add(tile2); // Add the sequence to candidates
                                 this.SequenceCandidates.add(tile3); // Add the sequence to candidates
+                                tile1.setSequence3(true);
+                                tile2.setSequence3(true);
+                                tile3.setSequence3(true);
                                 hand.remove(k); // Remove the third tile to avoid counting it again
                                 hand.remove(j); // Remove the second tile to avoid counting it again
                                 hand.remove(i); // Remove the first tile to avoid counting it again
@@ -151,6 +179,11 @@ public class Hand {
         return sequences;
     }
 
+    /*
+     * This method counts the number of sequences of two tiles in the hand.
+     * Assuming all existing sequences of three tiles have already been found.
+     * A sequence consists of two tiles of the same type with consecutive values.
+     */
     public int countSequences2(LinkedList<Tile> hand) {
         int sequences = 0;
 
@@ -164,6 +197,8 @@ public class Hand {
                         sequences++;
                         this.SequenceCandidates.add(tile1); // Add the first tile to candidates
                         this.SequenceCandidates.add(tile2); // Add the second tile to candidates
+                        tile1.setSequence2(true);
+                        tile2.setSequence2(true);
                         hand.remove(j); // Remove the second tile to avoid counting it again
                         hand.remove(i); // Remove the first tile to avoid counting it again
                         break; // Exit the loop since we found a sequence of two tiles
