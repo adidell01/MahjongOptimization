@@ -1,4 +1,4 @@
-public class Tile {
+public class Tile implements Comparable<Tile>{
     private tileType type;
     private int val;
     private int uid;
@@ -101,5 +101,48 @@ public class Tile {
         if(this.type == tileType.BAMBOO || this.type == tileType.CHARACTER || this.type == tileType.PIN)
             return this.type.name() + " " + this.val;
         return this.type.name();
+    }
+
+    @Override
+    public int compareTo(Tile other) {
+        if(this.type == other.type){
+            if(this.val == other.val)
+                return 0;
+            else if (this.val > other.val)
+                return 1;
+            else
+                return -1;
+        } else if (valueOf(this.type) > valueOf(other.type)){
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+
+    public int valueOf(tileType type){
+        switch (type) {
+            case CHARACTER:
+                return 0;
+            case PIN:
+                return 1;
+            case BAMBOO:
+                return 2;
+            case NORTH:
+                return 3;
+            case SOUTH:
+                return 4;
+            case EAST:
+                return 5;
+            case WEST:
+                return 6;
+            case RED:
+                return 7;
+            case GREEN:
+                return 8;
+            case WHITE:
+                return 9;
+            default:
+            throw new IllegalArgumentException();
+        }
     }
 }

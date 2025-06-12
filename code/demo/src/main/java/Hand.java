@@ -1,3 +1,6 @@
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Random;
 import java.util.Set;
@@ -8,15 +11,47 @@ import java.util.Set;
 public class Hand {
     LinkedList<Tile> hand = new LinkedList<>();
     Random randomizer = new Random();
-    Set<Tile> GroupCandidates = new java.util.HashSet<>();
-    Set<Tile> SequenceCandidates = new java.util.HashSet<>();
+    int shanten = 8;
+    Set<TileNode> triSet = new HashSet<TileNode>();
+    Set<TileNode> seqSet = new HashSet<TileNode>();
+    Set<Group> groups = new HashSet<Group>();
+    Set<Group> pairs = new HashSet<Group>();
+
+    boolean DEBUG = false;
     /**
      * Draw 14 tiles from the available pool of tiles.
      * @param tiles List of all currently drawable tiles.
      */
     public Hand(LinkedList<Tile> tiles){
         for(int i = 0; i < 14; i++){
-            hand.add(tiles.remove(randomizer.nextInt(tiles.size())));
+            Tile curTile = tiles.remove(randomizer.nextInt(tiles.size()));
+            TileNode curTriNode = new TileNode(curTile);
+            TileNode curSeqNode = new TileNode(curTile);
+
+            for(TileNode tileNode : triSet){
+                if(tileNode.tile.compareTo(curTile) == 0){
+                    curTriNode.neighbours.add(tileNode);
+                    tileNode.neighbours.add(curTriNode);
+                }
+            }
+            for(TileNode tileNode : seqSet){
+                if(tileNode.tile.getType() == curTile.getType() && Math.abs(curTile.getVal() - tileNode.tile.getVal()) <= 2 && curTile.getVal() != tileNode.tile.getVal()){
+                    curSeqNode.neighbours.add(tileNode);
+                    tileNode.neighbours.add(curSeqNode);
+                }
+            }
+            hand.add(curTile);
+            triSet.add(curTriNode);
+            seqSet.add(curSeqNode);
+        }
+        hand.sort(Comparator.naturalOrder());
+        findGroups();
+        if(DEBUG){
+            System.out.println("GROUPS: " + groups);
+        }
+        setShanten();
+        if(DEBUG){
+            System.out.println("SHANTEN: " + shanten);
         }
     }
 
@@ -28,186 +63,208 @@ public class Hand {
      * Least amount of tiles necessary to reach a ready hand (Tenpai).
      */
     public int getShanten(){
-        /*  TODO:   this method should return an integer value that indicates the least necessary amount
-         *          of tiles needed to complete the hand minus one. To achieve a win, a hand requires 4
-         *          groups of triplets or sequences (color always needs to be the same across a group)
-         *          and a pair. If necessary, add methods and fields to this class.
-         */
-        int minShanten = 8; // Maximum shanten value for a standard hand is 8
-        if (this.hand.size() != 14) {
-            throw new IllegalArgumentException("Hand must contain exactly 14 tiles.");
-        }
-        // We clone the hand to avoid modifying the original hand while counting groups and sequences
-        LinkedList<Tile> cloneHandGroups = (LinkedList<Tile>) this.hand.clone(); 
-        LinkedList<Tile> cloneHandSequences = (LinkedList<Tile>) this.hand.clone();
-
-
-        int triplets = countTriplets(cloneHandGroups);
-        int pairs = countPairs(cloneHandGroups);
-
-        int sequences3 = countSequences3(cloneHandSequences);
-        int sequences2 = countSequences2(cloneHandSequences);
-
-        System.out.println("Triplets: " + triplets);
-        System.out.println("Pairs: " + pairs); 
-        System.out.println("Group Candidates: " + this.GroupCandidates);
-        System.out.println("Sequences3: " + sequences3);
-        System.out.println("Sequences2: " + sequences2);
-        System.out.println("Sequence Candidates: " + this.SequenceCandidates);
-
-        Set<Tile> conflicts = new java.util.HashSet<>();
-        // Check for Candidate conflicts
-        for (Tile myTile : this.GroupCandidates) {
-            if (this.SequenceCandidates.contains(myTile)) {
-                // If a tile is both in Group and Sequence Candidates, we need to handle it
-                // For now, we just print a warning
-                System.out.println("Warning: Tile " + myTile + " is in both Group and Sequence Candidates.");
-                conflicts.add(myTile);
-            }
-        }
-
-        for (Tile myTile : conflicts) {
-            /*
-             * TODO: Handle conflicts between Group and Sequence Candidates.
-             * For now, we just print a warning.
-             */
-        }
-        
-        return minShanten;
+        return this.shanten;
     }
 
-    /*
-     * This method counts the number of triplets in the hand disregarding pairs and sequences.
-     * A triplet consists of three tiles of the same type and value.
-     */
-    public int countTriplets(LinkedList<Tile> hand) {
-        int triplets = 0;
+    private void setShanten(){
+        if (pairs.isEmpty()){
+            int shanten = 8;
+            Set<Group> newSet = new HashSet<Group>();
+            Set<Group> oldSet = new HashSet<Group>();
+            for(Group group : this.groups)
+                oldSet.add(group);
 
-        for (int i = 0; i < hand.size(); i++) {
-            Tile tile1 = hand.get(i);
-            for (int j = i + 1; j < hand.size(); j++) {
-                Tile tile2 = hand.get(j);
-                if (tile1.getType() == tile2.getType() && tile1.getVal() == tile2.getVal()) {
-                    //found a pair
-                    for (int k = j + 1; k < hand.size(); k++) {
-                        Tile tile3 = hand.get(k);
-                        if (tile1.getType() == tile3.getType() && tile1.getVal() == tile3.getVal()) {
-                            // Found a triplet
-                            triplets++;
-                            this.GroupCandidates.add(tile1); // Add the triplet to candidates
-                            this.GroupCandidates.add(tile2); // Add the triplet to candidates
-                            this.GroupCandidates.add(tile3); // Add the triplet to candidates
-                            tile1.setTriplet(true);
-                            tile2.setTriplet(true);
-                            tile3.setTriplet(true);
-                            hand.remove(k); // Remove the third tile to avoid counting it again
-                            hand.remove(j); // Remove the second tile to avoid counting it again
-                            hand.remove(i); // Remove the first tile to avoid counting it again
-                            break; // Exit the loop since we found a triplet
-                        }
-                    }  
+            for(Group baseGroup : this.groups){
+                for(Group oldGroup : oldSet){
+                    if(baseGroup.isDisjunct(oldGroup)){
+                            Group group = new Group(baseGroup, oldGroup);
+                            newSet.add(group);
+                            shanten = Math.min(shanten, 10 - group.get().length);
+                            if(DEBUG){
+                                System.out.println("Candidate: " + shanten + ", Group: " + group);
+                            }
+                    }
                 }
+                oldSet.remove(baseGroup);
             }
-        }
-        return triplets;
-    }
+            oldSet = newSet;
+            newSet = new HashSet<Group>();
+            if(DEBUG)
+                System.out.println(oldSet);
 
-    /*
-     * This method counts the number of pairs in the hand disregarding sequences
-     * and assuming all existing triplets have already been found.
-     * A pair consists of two tiles of the same type and value.
-     */
-    public int countPairs(LinkedList<Tile> hand) {
-        int pairs = 0;
-
-        for (int i = 0; i < hand.size(); i++) {
-            Tile tile1 = hand.get(i);
-            for (int j = i + 1; j < hand.size(); j++) {
-                Tile tile2 = hand.get(j);
-                if (tile1.getType() == tile2.getType() && tile1.getVal() == tile2.getVal()) {
-                    // Found a pair
-                    pairs++;
-                    this.GroupCandidates.add(tile1); // Add the pair to candidates
-                    this.GroupCandidates.add(tile2); // Add the pair to candidates
-                    tile1.setPair(true);
-                    tile2.setPair(true);
-                    hand.remove(j); // Remove the second tile to avoid counting it again
-                    hand.remove(i); // Remove the first tile to avoid counting it again
-                    break; // Exit the loop since we found a pair and there are no triplets left
-                }
-            }
-        }
-        return pairs;
-    }
-
-    /*
-     * This method counts the number of sequences of three tiles in the hand.
-     * A sequence consists of three tiles of the same type with consecutive values.
-     */
-    public int countSequences3(LinkedList<Tile> hand) {
-        int sequences = 0;
-
-        for (int i = 0; i < hand.size(); i++) {
-            Tile tile1 = hand.get(i);
-            if (tile1.getType() == tileType.BAMBOO || tile1.getType() == tileType.CHARACTER || tile1.getType() == tileType.PIN) {
-                for (int j = i + 1; j < hand.size(); j++) {
-                    Tile tile2 = hand.get(j);
-                    if (tile2.getType() == tile1.getType() && Math.abs(tile2.getVal() - tile1.getVal()) == 1) {
-                        for (int k = j + 1; k < hand.size(); k++) {
-                            Tile tile3 = hand.get(k);
-                            if (tile3.getType() == tile1.getType() && Math.abs(tile3.getVal() - tile1.getVal()) == 2 && Math.abs(tile3.getVal() - tile2.getVal()) == 1 ||
-                                tile3.getType() == tile1.getType() && Math.abs(tile3.getVal() - tile2.getVal()) == 2 && Math.abs(tile3.getVal() - tile1.getVal()) == 1) {
-                                // Found a sequence
-                                sequences++;
-                                this.SequenceCandidates.add(tile1); // Add the sequence to candidates
-                                this.SequenceCandidates.add(tile2); // Add the sequence to candidates
-                                this.SequenceCandidates.add(tile3); // Add the sequence to candidates
-                                tile1.setSequence3(true);
-                                tile2.setSequence3(true);
-                                tile3.setSequence3(true);
-                                hand.remove(k); // Remove the third tile to avoid counting it again
-                                hand.remove(j); // Remove the second tile to avoid counting it again
-                                hand.remove(i); // Remove the first tile to avoid counting it again
-                                break; // Exit the loop since we found a sequence
+            for(int i = 3; i <= 5; i++){
+                for(Group baseGroup : this.groups){
+                    for(Group oldGroup : oldSet){
+                        if(baseGroup.isDisjunct(oldGroup)){
+                            Group group = new Group(baseGroup, oldGroup);
+                            newSet.add(group);
+                            shanten = Math.min(shanten, 8 + i - group.get().length);
+                            if(DEBUG){
+                                System.out.println("Candidate: " + shanten + ", Group: " + group);
                             }
                         }
                     }
                 }
+                oldSet = newSet;
+                newSet = new HashSet<Group>();
+                if(DEBUG)
+                    System.out.println(oldSet);
+            }
+
+            for(Group group : newSet){
+                shanten = Math.min(13 - group.get().length, shanten);
+                    if(DEBUG){
+                        System.out.println("Candidate: " + shanten + ", Group: " + group);
+                    }
+            }
+            this.shanten = Math.max(shanten, 1);
+
+        } else {
+            for (Group pair : pairs){
+                int shanten = 7;
+                Set<Group> newSet = new HashSet<Group>();
+                Set<Group> oldSet = new HashSet<Group>();
+                oldSet.add(pair);
+                if(DEBUG)
+                    System.out.println(oldSet);
+
+                for(int i = 2; i <= 5; i++){
+                    for(Group baseGroup : this.groups){
+                        for(Group oldGroup : oldSet){
+                            if(baseGroup.isDisjunct(oldGroup)){
+                                Group group = new Group(baseGroup, oldGroup);
+                                newSet.add(group);
+                                shanten = Math.min(shanten, 8 + i - group.get().length);
+                                if(DEBUG){
+                                    System.out.println("Candidate: " + shanten + ", Group: " + group);
+                                }
+                            }
+                        }
+                    }
+                    oldSet = newSet;
+                    newSet = new HashSet<Group>();
+                    if(DEBUG)
+                        System.out.println(oldSet);
+                }
+
+                for(Group group : newSet){
+                    shanten = Math.min(13 - group.get().length, shanten);
+                    if(DEBUG){
+                        System.out.println("Candidate: " + shanten + ", Group: " + group);
+                    }
+                }
+                this.shanten = Math.min(shanten, this.shanten);
             }
         }
-
-        return sequences;
     }
+    
+    private void findGroups(){
+        Set<TileNode> visited = new HashSet<TileNode>();
+        
+        for(TileNode tileNode : triSet){
+            Set<TileNode> innerVisited = new HashSet<TileNode>();
+            visited.add(tileNode);
+            for(TileNode child : tileNode.neighbours){
+                if(visited.contains(child) || innerVisited.contains(child))
+                    continue;
+                innerVisited.add(child);
+                Group pair = new Group(tileNode.tile, child.tile);
+                this.groups.add(pair);
+                this.pairs.add(pair);
+                for(TileNode subChild : child.neighbours){
+                    if(visited.contains(subChild) || innerVisited.contains(subChild))
+                        continue;
+                    if(subChild.neighbours.contains(tileNode)){
+                        Group group = new Group(tileNode.tile, child.tile, subChild.tile);
+                        this.groups.add(group);
+                        if(DEBUG) System.out.println("Identical group added: " + group);
+                    }
+                }
+            }
+        }
+        visited.clear();
 
-    /*
-     * This method counts the number of sequences of two tiles in the hand.
-     * Assuming all existing sequences of three tiles have already been found.
-     * A sequence consists of two tiles of the same type with consecutive values.
-     */
-    public int countSequences2(LinkedList<Tile> hand) {
-        int sequences = 0;
-
-        for (int i = 0; i < hand.size(); i++) {
-            Tile tile1 = hand.get(i);
-            if (tile1.getType() == tileType.BAMBOO || tile1.getType() == tileType.CHARACTER || tile1.getType() == tileType.PIN) {
-                for (int j = i + 1; j < hand.size(); j++) {
-                    Tile tile2 = hand.get(j);
-                    if (tile2.getType() == tile1.getType() && Math.abs(tile2.getVal() - tile1.getVal()) == 1) {
-                        // Found a sequence of two tiles
-                        sequences++;
-                        this.SequenceCandidates.add(tile1); // Add the first tile to candidates
-                        this.SequenceCandidates.add(tile2); // Add the second tile to candidates
-                        tile1.setSequence2(true);
-                        tile2.setSequence2(true);
-                        hand.remove(j); // Remove the second tile to avoid counting it again
-                        hand.remove(i); // Remove the first tile to avoid counting it again
-                        break; // Exit the loop since we found a sequence of two tiles
+        for(TileNode tileNode : seqSet){
+            Set<TileNode> innerVisited = new HashSet<TileNode>();
+            visited.add(tileNode);
+            for(TileNode child : tileNode.neighbours){
+                if(visited.contains(child) || innerVisited.contains(child))
+                    continue;
+                innerVisited.add(child);
+                this.groups.add(new Group(tileNode.tile, child.tile));
+                for(TileNode subChild : child.neighbours){
+                    if(visited.contains(subChild) || innerVisited.contains(subChild))
+                        continue;
+                    if(subChild.neighbours.contains(tileNode)){
+                        Group group = new Group(tileNode.tile, child.tile, subChild.tile);
+                        this.groups.add(group);
+                        if(DEBUG) System.out.println("Sequential group added: " + group);
                     }
                 }
             }
         }
 
-        return sequences;
+        if(DEBUG){
+            for(Group group : this.groups){
+                System.out.println(group);
+            }
+        }
+    }
+}
+
+class Group{
+    private Tile[] tiles;
+
+    public Group(Tile t1, Tile t2, Tile t3){
+        tiles = new Tile[3];
+        tiles[0] = t1;
+        tiles[1] = t2;
+        tiles[2] = t3;
     }
 
+    public Group(Tile t1, Tile t2){
+        tiles = new Tile[2];
+        tiles[0] = t1;
+        tiles[1] = t2;
+    }
+
+    public Group(Group group1, Group group2){
+        tiles = new Tile[group1.tiles.length + group2.tiles.length];
+        int counter = 0;
+
+        for(Tile tile : group1.tiles){
+            this.tiles[counter] = tile;
+            counter++;
+        }
+        for(Tile tile : group2.tiles){
+            this.tiles[counter] = tile;
+            counter++;
+        }
+    }
+
+    public boolean isDisjunct(Group other){
+        for(Tile this_t : this.tiles)
+            for(Tile other_t : other.tiles)
+                if(this_t == other_t)
+                    return false;
+        return true;
+    }
+
+    public Tile[] get(){
+        return tiles;
+    }
+
+    @Override
+    public String toString(){
+        return Arrays.toString(tiles);
+    }
+}
+
+class TileNode{
+    final Tile tile;
+    Set<TileNode> neighbours = new HashSet<TileNode>();
+
+    public TileNode(Tile tile){
+        this.tile = tile;
+    }
 }
