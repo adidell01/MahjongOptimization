@@ -1,16 +1,27 @@
 
 import java.util.LinkedList;
+import java.util.Random;
 
 /**
- * Simulates a game
+ * Simulates a game containing a main player of type {@link Hand} and 3 hidden dummy players.
  */
 public class Game {
-    Hand player;
-    LinkedList<Tile> tiles = new LinkedList<>();
+    private Hand player;
+    private LinkedList<Tile> tiles = new LinkedList<Tile>();
+    private Hand[] dummies = new Hand[3];
+    private int currentPlayer;
+    private LinkedList<Tile> deadwall = new LinkedList<Tile>();
+
     /**
      * Generates a game setup with a pool of tiles and a player.
+     * 
+     * @param firstToStart  Takes an integer argument of the interval [0, 3] of natural numbers 
+     *                      to simulate which player starts first, with 3 being the main player
+     *                      and 0 being the next going counterclockwise. If the argument is
+     *                      outside of the interval an {@link IllegalArgumentException} will be
+     *                      thrown.
      */
-    public Game(){
+    public Game(int firstToStart){
         //Generate tiles for each type
         for(int type = 0; type < 10; type++){
             //Case for numbered Tiles (Bamboo, Character and Pin)
@@ -30,7 +41,73 @@ public class Game {
                 }
             }
         }
+        //Generate the deadwall
+        for(int i = 0; i < 14; i++){
+            this.deadwall.add(this.tiles.remove(new Random().nextInt(tiles.size())));
+        }
         //Generate a random hand simulating the main player (other players are currently ignored)
         this.player = new Hand(tiles);
+        //Generate dummy players (only present for consistency; can be safely ignored)
+        for(int i = 0; i < 3; i++)
+            this.dummies[i] = new Hand(tiles);
+        //Sets the current player
+        this.currentPlayer = firstToStart;
+        //progress the game to the players turn
+        nextPlayerTurn();
     }
+
+    /**
+     *          Getter method for the main player object.
+     * @return  The main player as an Object of type {@link Hand}.
+     */
+    public Hand getPlayer(){
+        return this.player;
+    }
+
+    /**
+     *                                      Discards the tile of the main players hand at the index given in tile.
+     * @param tile                          The index of the to-be-discarded tile. Must be a positive integer smaller than the hand size or 0.
+     * @throws IndexOutOfBoundsException    If discard is negative or greater than the main players hand size.
+     */
+    public void discard(int tile){
+        this.player.discard(tile);
+        this.currentPlayer = 0;
+        nextPlayerTurn();
+    }
+
+    /**
+     * Prints the discards of all players in the console with the first discard pile belonging to the main player and then going around counterclockwise.
+     */
+    public void getDiscards(){
+        this.player.getDiscards();
+        for(Hand dummy : this.dummies)
+            dummy.getDiscards();
+    }
+
+    private void nextPlayerTurn(){
+        currentPlayerDraw();
+        while(this.currentPlayer < 3){
+            currentPlayerDiscard();
+            this.currentPlayer++;
+            currentPlayerDraw();
+        }
+        System.out.println("Discarded Tiles:");
+        getDiscards();
+        System.out.println("Remaning Amount: " + tiles.size() + "\n");
+    }
+
+    private void currentPlayerDraw(){
+        if(this.currentPlayer == 3)
+            this.player.draw();
+        else
+            this.dummies[this.currentPlayer].draw();
+    }
+
+    private void currentPlayerDiscard(){
+        if(this.currentPlayer == 3)
+            this.player.discard();
+        else
+            this.dummies[this.currentPlayer].discard();
+    }
+
 }

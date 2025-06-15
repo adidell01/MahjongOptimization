@@ -1,101 +1,62 @@
+/**
+ * Simulates a tile with a {@link tileType}, value and uid.
+ */
 public class Tile implements Comparable<Tile>{
     private tileType type;
     private int val;
     private int uid;
     private static int uidGenerator = 0;
 
-    private boolean isSequence2 = false;
-    private boolean isSequence3 = false;
-    private boolean isPair = false;
-    private boolean isTriplet = false;
-
+    /**
+     *                                  Generates a new unique tile given a type and value.
+     * @param type                      The type of tile as an integer value. For the exact type conversion, see also {@link Tile#valueOf(tileType) Tile.valueOf(...)}.
+     * @param val                       The value of the tile (as integer between and including 1 and 9 for bamboo/character/pin and only 1 otherwise)
+     * @throws IllegalArgumentException If !(0 <= type <= 9), (0 <= type <= 2 && !(0 <= val <= 9)) or (3 <= type <= 9 && val != 1)
+     */
     public Tile(int type, int val){
-        switch (type) {
-            case 0:
-                this.type = tileType.BAMBOO;
-                break;
-            case 1:
-                this.type = tileType.CHARACTER;
-                break;
-            case 2:
-                this.type = tileType.PIN;
-                break;
-            case 3:
-                this.type = tileType.NORTH;
-                break;
-            case 4:
-                this.type = tileType.SOUTH;
-                break;
-            case 5:
-                this.type = tileType.EAST;
-                break;
-            case 6:
-                this.type = tileType.WEST;
-                break;
-            case 7:
-                this.type = tileType.RED;
-                break;
-            case 8:
-                this.type = tileType.GREEN;
-                break;
-            case 9:
-                this.type = tileType.WHITE;
-                break;
-            default:
-                throw new IllegalArgumentException("INVALID TYPE FOR TILECREATION");
+        try{
+            this.type = Tile.valueOf(type);
+        } catch (IllegalArgumentException e){
+            throw new IllegalArgumentException("INVALID TYPE FOR TILE CREATION");
         }
+        
+        if((type < 3 && (val < 1 || val > 9)) || val != 1)
+            throw new IllegalArgumentException("INVALID VALUE FOR TILE");
         this.val = val;
         this.uid = this.uidGenerator;
         this.uidGenerator++;
     }
 
+    /**
+     *          Returns the value of the tile.
+     * @return  An integer value between 1 and 9 if the type of the tile is {@link tileType#CHARACTER}, {@link tileType#PIN}
+     *          or {@link tileType#BAMBOO} and only 1 otherwise.
+     */
     public int getVal() {
         return this.val;
     }
 
+    /**
+     *          Returns the the type of the tile.
+     * @return  The type of the tile as a {@link tileType} object.
+     */
     public tileType getType() {
         return this.type;
     }
 
+    /**
+     *          Returns the unique ID of the tile.
+     * @return  The unique ID of this specific tile.
+     */
     public int getUid() {
         return this.uid;
     }
 
-    public void setSequence2(boolean isSequence2) {
-        this.isSequence2 = isSequence2;
-    }
-    public boolean isSequence2() {
-        return this.isSequence2;
-    }
-
-    public void setSequence3(boolean isSequence3) {
-        this.isSequence3 = isSequence3;
-    }
-    public boolean isSequence3() {
-        return this.isSequence3;
-    }
-
-    public void setPair(boolean isPair) {
-        this.isPair = isPair;
-    }
-    public boolean isPair() {
-        return this.isPair;
-    }
-
-    public void setTriplet(boolean isTriplet) {
-        this.isTriplet = isTriplet;
-    }
-    public boolean isTriplet() {
-        return this.isTriplet;
-    }
-
-    public void resetFlags() {
-        this.isSequence2 = false;
-        this.isSequence3 = false;
-        this.isPair = false;
-        this.isTriplet = false;
-    }
-
+    /**
+     * Returns the String of a tile as {@link tileType#name()}. If the tile is of type
+     * {@link tileType#CHARACTER}, {@link tileType#PIN} or {@link tileType#BAMBOO},
+     * it will also include a space followed by it's value.
+     */
     @Override
     public String toString(){
         if(this.type == tileType.BAMBOO || this.type == tileType.CHARACTER || this.type == tileType.PIN)
@@ -103,6 +64,13 @@ public class Tile implements Comparable<Tile>{
         return this.type.name();
     }
 
+    /**
+     * The ordering of tiles goes {@link tileType#CHARACTER}s 1 through 9, 
+     * {@link tileType#PIN}s 1 through 9, {@link tileType#BAMBOO}s 1 through 9,
+     * {@link tileType#NORTH}, {@link tileType#SOUTH}, {@link tileType#EAST}, 
+     * {@link tileType#WEST}, {@link tileType#RED}, {@link tileType#GREEN}, 
+     * {@link tileType#WHITE}.
+     */
     @Override
     public int compareTo(Tile other) {
         if(this.type == other.type){
@@ -112,14 +80,21 @@ public class Tile implements Comparable<Tile>{
                 return 1;
             else
                 return -1;
-        } else if (valueOf(this.type) > valueOf(other.type)){
+        } else if (Tile.valueOf(this.type) > Tile.valueOf(other.type)){
             return 1;
         } else {
             return -1;
         }
     }
 
-    public int valueOf(tileType type){
+    /**
+     *              Maps each {@link tileType} to an integer value. Used for {@link Tile#compareTo(Tile)} with
+     *              each type corresponding to the position of the type in the type order starting with
+     *              {@link tileType#CHARACTER} at 0.
+     * @param type  The to-be-converted {@link tileType}.
+     * @return      The appropriate integer value of the type.
+     */
+    public static int valueOf(tileType type){
         switch (type) {
             case CHARACTER:
                 return 0;
@@ -143,6 +118,40 @@ public class Tile implements Comparable<Tile>{
                 return 9;
             default:
             throw new IllegalArgumentException();
+        }
+    }
+
+    /**
+     *                                  Maps each integer value from 0 to 9 to a {@link tileType}. The mapping follows
+     *                                  the order used in {@link Tile#compareTo(Tile)}.
+     * @param type                      The to-be-converted type as integer. Must be inside the interval [0, 9].
+     * @return                          The converted {@link tileType}.
+     * @throws IllegalArgumentException If the integer type is not inside the interval [0, 9].
+     */
+    public static tileType valueOf(int type){
+        switch (type) {
+            case 0:
+                return tileType.CHARACTER;
+            case 1:
+                return tileType.PIN;
+            case 2:
+                return tileType.BAMBOO;
+            case 3:
+                return tileType.NORTH;
+            case 4:
+                return tileType.SOUTH;
+            case 5:
+                return tileType.EAST;
+            case 6:
+                return tileType.WEST;
+            case 7:
+                return tileType.RED;
+            case 8:
+                return tileType.GREEN;
+            case 9:
+                return tileType.WHITE;
+            default:
+                throw new IllegalArgumentException();
         }
     }
 }

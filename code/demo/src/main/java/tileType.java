@@ -1,7 +1,7 @@
 public enum tileType {
-    BAMBOO,
     CHARACTER,
     PIN,
+    BAMBOO,
     NORTH,
     SOUTH,
     EAST,
