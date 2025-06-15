@@ -65,14 +65,18 @@ public class Game {
     }
 
     /**
-     *                                      Discards the tile of the main players hand at the index given in tile.
+     *                                      Discards the tile of the main players hand at the index given in tile. Returns false once there are
+     *                                      no tiles left to draw. Otherwise simulates dummy players drawing and discarding a tile until the
+     *                                      main player draws a tile again, then returns true.
      * @param tile                          The index of the to-be-discarded tile. Must be a positive integer smaller than the hand size or 0.
+     * @return                              True if the discard was successful and it's the main player's turn again. False if at some players
+     *                                      turn (be it main player or dummy) before being able to draw, there are no more tiles left to draw.
      * @throws IndexOutOfBoundsException    If discard is negative or greater than the main players hand size.
      */
-    public void discard(int tile){
+    public boolean discard(int tile){
         this.player.discard(tile);
         this.currentPlayer = 0;
-        nextPlayerTurn();
+        return nextPlayerTurn();
     }
 
     /**
@@ -84,16 +88,21 @@ public class Game {
             dummy.getDiscards();
     }
 
-    private void nextPlayerTurn(){
+    private boolean nextPlayerTurn(){
+        if(this.tiles.isEmpty())
+            return false;
         currentPlayerDraw();
         while(this.currentPlayer < 3){
             currentPlayerDiscard();
             this.currentPlayer++;
+            if(this.tiles.isEmpty())
+                return false;
             currentPlayerDraw();
         }
         System.out.println("Discarded Tiles:");
         getDiscards();
         System.out.println("Remaning Amount: " + tiles.size() + "\n");
+        return true;
     }
 
     private void currentPlayerDraw(){

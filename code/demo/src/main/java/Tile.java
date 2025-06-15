@@ -17,11 +17,11 @@ public class Tile implements Comparable<Tile>{
         try{
             this.type = Tile.valueOf(type);
         } catch (IllegalArgumentException e){
-            throw new IllegalArgumentException("INVALID TYPE FOR TILE CREATION");
+            throw new IllegalArgumentException("INVALID TYPE FOR TILE CREATION: " + type);
         }
         
-        if((type < 3 && (val < 1 || val > 9)) || val != 1)
-            throw new IllegalArgumentException("INVALID VALUE FOR TILE");
+        if((type < 3 && (val < 1 || val > 9)) || (type >= 3 && val != 1))
+            throw new IllegalArgumentException("INVALID VALUE FOR TILE: " + val + ", TYPE: " + this.type.name());
         this.val = val;
         this.uid = this.uidGenerator;
         this.uidGenerator++;

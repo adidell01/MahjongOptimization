@@ -20,14 +20,20 @@ public class Main {
                 if(index < 0 || index > 13){
                     System.out.println("Index must be between 0 and 13");
                 } else {
-                    game.discard(index);
+                    if(!game.discard(index)){
+                        System.out.println("The round has ended");
+                        return;
+                    }
                     found = true;
                 }
                 }
                 catch(NumberFormatException e){
                     for(Tile tile : game.getPlayer().getHand()){
                         if(tile.toString().equalsIgnoreCase(in.substring(1))){
-                            game.discard(game.getPlayer().getHand().indexOf(tile));
+                            if(game.discard(game.getPlayer().getHand().indexOf(tile))){
+                                System.out.println("The round has ended");
+                                return;
+                            }
                             found = true;
                             break;
                         }
