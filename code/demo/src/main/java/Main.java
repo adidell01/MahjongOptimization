@@ -9,9 +9,11 @@ public class Main {
         System.out.println("Shanten: " + game.getPlayer().getShanten());
         String command;
         boolean showShanten = true;
+        long time = System.nanoTime();
         do {
-            System.out.println();
+            System.out.println("Time: " + (double) (System.nanoTime() - time)/1000000000);
             command = scanner.next();
+            time = System.nanoTime();
             if(command.equals("discard")){
                 String in = scanner.nextLine();
                 boolean found = false;
@@ -30,7 +32,7 @@ public class Main {
                 catch(NumberFormatException e){
                     for(Tile tile : game.getPlayer().getHand()){
                         if(tile.toString().equalsIgnoreCase(in.substring(1))){
-                            if(game.discard(game.getPlayer().getHand().indexOf(tile))){
+                            if(!game.discard(game.getPlayer().getHand().indexOf(tile))){
                                 System.out.println("The round has ended");
                                 return;
                             }

@@ -7,10 +7,11 @@ import java.util.Random;
  */
 public class Game {
     private Hand player;
-    private LinkedList<Tile> tiles = new LinkedList<Tile>();
+    private LinkedList<Tile> tiles = new LinkedList<>();
     private Hand[] dummies = new Hand[3];
     private int currentPlayer;
-    private LinkedList<Tile> deadwall = new LinkedList<Tile>();
+    private LinkedList<Tile> deadwall = new LinkedList<>();
+    private Random randomizer = new Random();
 
     /**
      * Generates a game setup with a pool of tiles and a player.
@@ -56,6 +57,10 @@ public class Game {
         nextPlayerTurn();
     }
 
+    private Game(){
+        
+    }
+
     /**
      *          Getter method for the main player object.
      * @return  The main player as an Object of type {@link Hand}.
@@ -88,6 +93,22 @@ public class Game {
             dummy.getDiscards();
     }
 
+    public Game copyOf(){
+        Game copy = new Game();
+        copy.player = this.player.copyOf();
+        for(Tile tile : this.tiles){
+            copy.tiles.add(tile.copyOf());
+        }
+        for(int i = 0; i < 3; i++){
+            copy.dummies[i] = this.dummies[i].copyOf();
+        }
+        copy.currentPlayer = this.currentPlayer;
+        for(Tile tile : this.deadwall){
+            copy.deadwall.add(tile.copyOf());
+        }
+        return copy;
+    }
+
     private boolean nextPlayerTurn(){
         if(this.tiles.isEmpty())
             return false;
@@ -107,9 +128,9 @@ public class Game {
 
     private void currentPlayerDraw(){
         if(this.currentPlayer == 3)
-            this.player.draw();
+            this.player.draw(tiles.remove(randomizer.nextInt(tiles.size())));
         else
-            this.dummies[this.currentPlayer].draw();
+            this.dummies[this.currentPlayer].draw(tiles.remove(randomizer.nextInt(tiles.size())));
     }
 
     private void currentPlayerDiscard(){

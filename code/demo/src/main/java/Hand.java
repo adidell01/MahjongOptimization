@@ -14,14 +14,13 @@ public class Hand {
     private LinkedList<Tile> hand = new LinkedList<>();
     private Random randomizer = new Random();
     private int shanten = 8;
-    private Set<TileNode> triSet = new HashSet<TileNode>();
-    private Set<TileNode> seqSet = new HashSet<TileNode>();
-    private Set<Group> groups = new HashSet<Group>();
-    private Set<Group> pairs = new HashSet<Group>();
-    private Map<Tile, TileNode> triToNode = new HashMap<Tile, TileNode>();
-    private Map<Tile, TileNode> seqToNode = new HashMap<Tile, TileNode>();
-    private LinkedList<Tile> tiles;
-    private LinkedList<Tile> discards = new LinkedList<Tile>();
+    private Set<TileNode> triSet = new HashSet<>();
+    private Set<TileNode> seqSet = new HashSet<>();
+    private Set<Group> groups = new HashSet<>();
+    private Set<Group> pairs = new HashSet<>();
+    private Map<Tile, TileNode> triToNode = new HashMap<>();
+    private Map<Tile, TileNode> seqToNode = new HashMap<>();
+    private LinkedList<Tile> discards = new LinkedList<>();
 
     private boolean DEBUG = false;
     /**
@@ -30,11 +29,14 @@ public class Hand {
      * @throws IllegalArgumentException If there are less than 13 tiles to draw from.
      */
     public Hand(LinkedList<Tile> tiles){
-        this.tiles = tiles;
         for(int i = 0; i < 13; i++){
-            softDraw();
+            softDraw(tiles.remove(randomizer.nextInt(tiles.size())));
         }
         hand.sort(Comparator.naturalOrder());
+    }
+
+    private Hand(){
+
     }
 
     /**
@@ -78,11 +80,15 @@ public class Hand {
     }
 
     /**
-     * Randomly draws the next tile from the pool of tiles given to the constructor.
+     *                                  Simulates drawing the specified Tile, adding it to the hand.
+     * @param tile                      The to-be-drawn tile.
+     * @throws NullPointerException     If tile is null.
      */
-    public void draw(){
+    public void draw(Tile tile){
+        if(tile == null)
+            throw new NullPointerException("Cannot draw Tile \"null\"");
         hand.sort(Comparator.naturalOrder());
-        softDraw();
+        softDraw(tile);
         findGroups();
         if(DEBUG){
             System.out.println("GROUPS: " + groups);
@@ -108,20 +114,35 @@ public class Hand {
         System.out.println(this.discards);
     }
 
-    private void softDraw(){
-        Tile curTile = tiles.remove(randomizer.nextInt(tiles.size()));
+    public Hand copyOf(){
+        Hand copy = new Hand();
+        for(int i = 0; i < this.hand.size(); i++){
+            Tile next = this.hand.get(i).copyOf();
+            if(i < 13){
+                copy.softDraw(next);
+            } else{
+                copy.draw(next);
+            }
+        }
+        if(this.hand.size() < 14){
+            copy.hand.sort(Comparator.naturalOrder());
+        }
+        return copy;
+    }
+
+    private void softDraw(Tile curTile){
         TileNode curTriNode = new TileNode(curTile);
         TileNode curSeqNode = new TileNode(curTile);
         this.triToNode.put(curTile, curTriNode);
         this.seqToNode.put(curTile, curSeqNode);
 
-        for(TileNode tileNode : triSet){
+        for(TileNode tileNode : this.triSet){
             if(tileNode.tile.compareTo(curTile) == 0){
                 curTriNode.neighbours.add(tileNode);
                 tileNode.neighbours.add(curTriNode);
             }
         }
-        for(TileNode tileNode : seqSet){
+        for(TileNode tileNode : this.seqSet){
             if(tileNode.tile.getType() == curTile.getType() && Math.abs(curTile.getVal() - tileNode.tile.getVal()) <= 2 && curTile.getVal() != tileNode.tile.getVal()){
                 curSeqNode.neighbours.add(tileNode);
                 tileNode.neighbours.add(curSeqNode);
@@ -311,6 +332,14 @@ class Group{
         }
     }
 
+    private Group(Group group){
+        Tile[] copy = group.tiles;
+        this.tiles = new Tile[copy.length];
+        for(int i = 0; i < copy.length; i++){
+            this.tiles[i] = copy[i].copyOf();
+        }
+    }
+
     public boolean isDisjunct(Group other){
         for(Tile this_t : this.tiles)
             for(Tile other_t : other.tiles)
@@ -334,6 +363,10 @@ class Group{
     public String toString(){
         return Arrays.toString(tiles);
     }
+
+    public Group copyOf(){
+        return new Group(this);
+    }
 }
 
 class TileNode{
@@ -342,5 +375,14 @@ class TileNode{
 
     public TileNode(Tile tile){
         this.tile = tile;
+    }
+
+    private TileNode(TileNode tileNode){
+        this.tile = tileNode.tile.copyOf();
+        
+    }
+
+    public TileNode copyOf(){
+        return new TileNode(this);
     }
 }

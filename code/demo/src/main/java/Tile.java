@@ -154,4 +154,8 @@ public class Tile implements Comparable<Tile>{
                 throw new IllegalArgumentException();
         }
     }
+
+    public Tile copyOf(){
+        return new Tile(Tile.valueOf(this.type), this.val);
+    }
 }
