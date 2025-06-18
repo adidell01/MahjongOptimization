@@ -30,7 +30,7 @@ public class Main {
                 catch(NumberFormatException e){
                     for(Tile tile : game.getPlayer().getHand()){
                         if(tile.toString().equalsIgnoreCase(in.substring(1))){
-                            if(game.discard(game.getPlayer().getHand().indexOf(tile))){
+                            if(!game.discard(game.getPlayer().getHand().indexOf(tile))){
                                 System.out.println("The round has ended");
                                 return;
                             }
