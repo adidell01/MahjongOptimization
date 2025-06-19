@@ -93,6 +93,10 @@ public class Game {
             dummy.getDiscards();
     }
 
+    public LinkedList<Tile> getTiles(){
+        return this.tiles;
+    }
+
     public Game copyOf(){
         Game copy = new Game();
         copy.player = this.player.copyOf();
