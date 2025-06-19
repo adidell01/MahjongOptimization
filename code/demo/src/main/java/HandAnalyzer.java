@@ -9,7 +9,7 @@ public class HandAnalyzer {
     }
 
     /*
-     * TODO: generate a graph of all possible hands for the given depth
+     * generate a graph of all possible hands for the given depth
      */
     public void generateGraph(int depth) {
         LinkedList<Node> queue = new LinkedList<>();
@@ -49,7 +49,7 @@ public class HandAnalyzer {
                 for (Node child : currentNode.getChildren()) {
                     /* make sure that no node that generates the same hand exists on this level of depth */
                     for (Node existingChild : nodesNextDepth) {
-                        if (existingChild.getGame().getPlayer().getHand().equals(child.getGame().getPlayer().getHand())) { //child's hand already exists
+                        if (existingChild.getGame().getPlayer().getHand().toString().equals(child.getGame().getPlayer().getHand().toString())) { //child's hand already exists
                             currentNode.removeChild(child);
                             currentNode.addChild(existingChild); // replace child with existing child
                             existingChild.setProb(existingChild.getProb() + child.getProb()); // increase the probability of the existing child
