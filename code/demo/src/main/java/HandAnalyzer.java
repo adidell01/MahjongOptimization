@@ -1,4 +1,5 @@
 
+import java.util.Iterator;
 import java.util.LinkedList;
 
 public class HandAnalyzer {
@@ -19,11 +20,10 @@ public class HandAnalyzer {
             return; // Do nothing if depth is zero or negative
         }
 
-        LinkedList<Node> nextQueue = new LinkedList<>();
-        LinkedList<Node> nodesNextDepth = new LinkedList<>();
         int counter = 0;
         while (counter < depth) {
-        
+            LinkedList<Node> nextQueue = new LinkedList<>();
+
             for (Node currentNode : queue) {
                 if (counter == depth) {
                     break; // Stop processing if we reached the desired depth
@@ -44,28 +44,35 @@ public class HandAnalyzer {
                         currentNode.addChild(childNode);
                     }
                 }
-
+                LinkedList<Node> nodesNextDepth = new LinkedList<>();
+                Iterator<Node> iterator = currentNode.getChildren().iterator();
                 // Generate all possible next states from the current node
-                for (Node child : currentNode.getChildren()) {
+                while (iterator.hasNext()) {
+                    Node child = iterator.next();
+                    boolean alreadyExists = false;
                     /* make sure that no node that generates the same hand exists on this level of depth */
                     for (Node existingChild : nodesNextDepth) {
                         if (existingChild.getGame().getPlayer().getHand().toString().equals(child.getGame().getPlayer().getHand().toString())) { //child's hand already exists
-                            currentNode.removeChild(child);
                             currentNode.addChild(existingChild); // replace child with existing child
                             existingChild.setProb(existingChild.getProb() + child.getProb()); // increase the probability of the existing child
-                            break; // no need to check further, we found a match
+                            iterator.remove(); // remove the child from the current node's children
+                            alreadyExists = true; // no need to check further, we found a match
                         }
                     }
-                    nextQueue.add(child);
-                    nodesNextDepth.add(child);
+                    if (!alreadyExists) {
+                        nextQueue.add(child);
+                        nodesNextDepth.add(child);
+                    }
                 }
             }
             queue = nextQueue;
             counter++;
         }
+
         return; // the Graph has been generated, now it can be used for further analysis
     }
-
-
-   
+    
+    public void printRootChildren() {
+        System.out.println("#Children of root node: " + rootNode.getChildren().size());
+    }
 }

@@ -63,6 +63,13 @@ public class Main {
                     showShanten = true;
                     System.out.println("Shanten enabled");
                 }
+            } else if(command.equals("analyze")){
+                Node rootNode = new Node(game);
+                HandAnalyzer analyzer = new HandAnalyzer(rootNode);
+                System.out.println("Generating graph...");
+                analyzer.generateGraph(2);
+                System.out.println("Graph generated.");
+                analyzer.printRootChildren();
             } else if(!command.equals("exit")){
                 System.out.println("discard <index>:\tDiscard tile at given index. Index must be number between 0 (left-most tile) and 13 (right-most tile)");
                 System.out.println("discard <tile>:\t\tDiscard specified tile if present.");
