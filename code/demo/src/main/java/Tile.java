@@ -6,7 +6,7 @@ public class Tile implements Comparable<Tile>{
     private int val;
     private int uid;
     private static int uidGenerator = 0;
-
+    private static final Tile[] staticTiles = initializeStaticTiles();
     /**
      *                                  Generates a new unique tile given a type and value.
      * @param type                      The type of tile as an integer value. For the exact type conversion, see also {@link Tile#valueOf(tileType) Tile.valueOf(...)}.
@@ -25,6 +25,18 @@ public class Tile implements Comparable<Tile>{
         this.val = val;
         this.uid = this.uidGenerator;
         this.uidGenerator++;
+    }
+
+    public Tile(int index){
+        if (0 <= index && index < 27){
+            this.type = Tile.valueOf(index / 9);
+            this.val = (index % 9) + 1;
+        } else if (27 <= index && index < 34){
+            this.type = Tile.valueOf(index - 24);
+            this.val = 1;
+        } else {
+            throw new IllegalArgumentException("Tile index is " + index + "\nShould be between 0 and 33");
+        }
     }
 
     /**
@@ -157,5 +169,25 @@ public class Tile implements Comparable<Tile>{
 
     public Tile copyOf(){
         return new Tile(Tile.valueOf(this.type), this.val);
+    }
+
+    public int orderPos(){
+        int typeVal = valueOf(this.getType());
+        if (typeVal <= 2){
+            return typeVal * 9 + this.getVal() - 1;
+        }
+        return 24 + typeVal;
+    }
+
+    public static Tile tileAt(int i){
+        return staticTiles[i];
+    }
+
+    private static Tile[] initializeStaticTiles(){
+        Tile[] res = new Tile[34];
+        for(int i = 0; i < 34; i++){
+            res[i] = new Tile(i);
+        }
+        return res;
     }
 }

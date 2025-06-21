@@ -53,8 +53,8 @@ public class Hand {
     /**
      * Randomly discards a tile from the given hand.
      */
-    public void discard(){
-        discard(randomizer.nextInt(hand.size()));
+    public Tile discard(){
+        return discard(randomizer.nextInt(hand.size()));
     }
 
     /**
@@ -62,7 +62,7 @@ public class Hand {
      * @param discard   The index of the to-be-discarded tile. Must be a positive integer smaller than the hand size or 0.
      * @throws IndexOutOfBoundsException If discard is negative or greater than the hand size.
      */
-    public void discard(int discard){
+    public Tile discard(int discard){
         Tile discardTile = hand.remove(discard);
         this.discards.add(discardTile);
         
@@ -77,6 +77,26 @@ public class Hand {
         for(TileNode curNode : discardTileNode.neighbours){
             curNode.neighbours.remove(discardTileNode);
         }
+
+        return discardTile;
+    }
+
+    public Tile simDiscard(int discard){
+        Tile discardTile = hand.remove(discard);
+        
+        TileNode discardTileNode = this.triToNode.get(discardTile);
+        this.triSet.remove(discardTileNode);
+        for(TileNode curNode : discardTileNode.neighbours){
+            curNode.neighbours.remove(discardTileNode);
+        }
+
+        discardTileNode = this.seqToNode.get(discardTile);
+        this.seqSet.remove(discardTileNode);
+        for(TileNode curNode : discardTileNode.neighbours){
+            curNode.neighbours.remove(discardTileNode);
+        }
+
+        return discardTile;
     }
 
     /**

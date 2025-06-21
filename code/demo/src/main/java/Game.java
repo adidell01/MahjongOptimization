@@ -12,6 +12,7 @@ public class Game {
     private int currentPlayer;
     private LinkedList<Tile> deadwall = new LinkedList<>();
     private Random randomizer = new Random();
+    private int[] unkowns = new int[34];
 
     /**
      * Generates a game setup with a pool of tiles and a player.
@@ -30,6 +31,7 @@ public class Game {
                 //Generate tiles for each value of given type
                 for(int val = 1; val <= 9; val++){
                     //Generate 4 copies of given tile
+                    this.unkowns[type * 9 + val - 1] = 4;
                     for(int i = 0; i < 4; i++){
                         tiles.add(new Tile(type, val));
                     }
@@ -37,6 +39,7 @@ public class Game {
             //Case for Winds (North, South, East and West) and Dragons (Red, Green and White)
             } else {
                 //Generate 4 copies of given tile
+                this.unkowns[24 + type] = 4;
                 for(int i = 0; i < 4; i++){
                     tiles.add(new Tile(type, 1));
                 }
@@ -48,6 +51,9 @@ public class Game {
         }
         //Generate a random hand simulating the main player (other players are currently ignored)
         this.player = new Hand(tiles);
+        for(Tile tile : this.player.getHand()){
+            this.unkowns[tile.orderPos()]--;
+        }
         //Generate dummy players (only present for consistency; can be safely ignored)
         for(int i = 0; i < 3; i++)
             this.dummies[i] = new Hand(tiles);
@@ -79,7 +85,7 @@ public class Game {
      * @throws IndexOutOfBoundsException    If discard is negative or greater than the main players hand size.
      */
     public boolean discard(int tile){
-        this.player.discard(tile);
+        this.unkowns[this.player.discard(tile).orderPos()]--;
         this.currentPlayer = 0;
         return nextPlayerTurn();
     }
@@ -113,6 +119,14 @@ public class Game {
         return copy;
     }
 
+    public int getUnkown(int i){
+        return this.unkowns[i];
+    }
+    
+    public int[] getUnkowns(){
+        return this.unkowns;
+    }
+    
     private boolean nextPlayerTurn(){
         if(this.tiles.isEmpty())
             return false;
@@ -139,9 +153,9 @@ public class Game {
 
     private void currentPlayerDiscard(){
         if(this.currentPlayer == 3)
-            this.player.discard();
+            this.unkowns[this.player.discard().orderPos()]--;
         else
-            this.dummies[this.currentPlayer].discard();
+            this.unkowns[this.dummies[this.currentPlayer].discard().orderPos()]--;
     }
 
 }
