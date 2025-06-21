@@ -12,7 +12,7 @@ public class HandAnalyzer {
     /*
      * generate a graph of all possible hands for the given depth
      */
-    public void generateGraph(int depth) {
+    public void generateGraph(int depth, int width) {
         LinkedList<Node> queue = new LinkedList<>();
         queue.add(rootNode);
 
@@ -30,11 +30,16 @@ public class HandAnalyzer {
                 }
                 
                 LinkedList<Tile> myList = currentNode.game.getTiles();
+                int widthCounter = width;
+                
                 /* calculate the probability of a draw for every tile in myList
                  * then generate a copy of the current game for every tile in myList
                  * and add it as a child to the current node, with the probability as weight
                  */
                 for (Tile tile : myList) {
+                    if (widthCounter <= 0){
+                        break;
+                    }
                     for (int j = 0; j < 14; j++) {
                         Game gameCopy = currentNode.getGame().copyOf();
                         gameCopy.getTiles().remove(tile);
@@ -43,6 +48,7 @@ public class HandAnalyzer {
                         Node childNode = new Node(gameCopy, 1.0 / (myList.size()*14)); // Assuming equal probability for simplicity
                         currentNode.addChild(childNode);
                     }
+                    widthCounter--;
                 }
                 LinkedList<Node> nodesNextDepth = new LinkedList<>();
                 Iterator<Node> iterator = currentNode.getChildren().iterator();

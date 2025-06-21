@@ -1,3 +1,5 @@
+import java.util.InputMismatchException;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class Main {
@@ -64,12 +66,19 @@ public class Main {
                     System.out.println("Shanten enabled");
                 }
             } else if(command.equals("analyze")){
+                try{
+                int depth = scanner.nextInt();
+                int width = scanner.nextInt();
                 Node rootNode = new Node(game);
                 HandAnalyzer analyzer = new HandAnalyzer(rootNode);
                 System.out.println("Generating graph...");
-                analyzer.generateGraph(2);
+                analyzer.generateGraph(depth, width);
                 System.out.println("Graph generated.");
                 analyzer.printRootChildren();
+                }
+                catch(NoSuchElementException e){
+                    System.out.println("Please enter a depth an width for \"analyze\".");
+                }
             } else if(!command.equals("exit")){
                 System.out.println("discard <index>:\tDiscard tile at given index. Index must be number between 0 (left-most tile) and 13 (right-most tile)");
                 System.out.println("discard <tile>:\t\tDiscard specified tile if present.");
