@@ -12,6 +12,9 @@ public class Main {
         String command;
         boolean showShanten = true;
         long time = System.nanoTime();
+        DrawAnalyzer analyzers = new DrawAnalyzer(game);
+        analyzers.generateGraph(3);
+        System.out.println();
         do {
             System.out.println("Time: " + (double) (System.nanoTime() - time)/1000000000);
             command = scanner.next();

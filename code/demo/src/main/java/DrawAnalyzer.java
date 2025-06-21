@@ -36,16 +36,19 @@ public class DrawAnalyzer {
             set.add(cur);
         }
         while(depth > 1){
-            nextSet(set);
+            set = nextSet(set);
             depth--;
         }
+        System.out.println(set.size());
     }
 
     private Set<DrawNode> nextSet(Set<DrawNode> set){
+        System.out.println(set.size());
         Set<DrawNode> res = new HashSet<>();
         for(int i = 0; i < 34; i++){
             Tile tile = new Tile(i);
             Iterator<DrawNode> it = set.iterator();
+            LinkedList<DrawNode> remove = new LinkedList<>();
             while(it.hasNext()){
                 DrawNode cur = it.next();
                 Set<Tile> subset = cur.getTiles();
@@ -54,7 +57,7 @@ public class DrawAnalyzer {
                 while(subit.hasNext()){
                     Tile subtile = subit.next();
                     if(subtile.compareTo(tile) == 0){
-                        set.remove(cur);
+                        remove.add(cur);
                     }
                 }
                 cur.add(toAdd);
@@ -66,6 +69,9 @@ public class DrawAnalyzer {
                     }
                 }
                 res.add(toAdd);
+            }
+            for(DrawNode cur : remove){
+                set.remove(cur);
             }
         }
         return res;
