@@ -121,9 +121,31 @@ class DrawNode{
     }
 
     public boolean contains(DrawNode node){
-        //TODO: if this.tiles contains node.tiles, return true. otherwise false.
+        //if this.tiles contains node.tiles, return true. otherwise false.
         //ex. [CHARACTER 1, CHARACTER 1, RED] contains [CHARACTER 1, CHARACTER 1], but not [RED, RED]
         //note: Tiles between this.tiles and node.tiles may be distinct and posess the same value. In this case the result should still be true.
-        return false;
+
+        Set<Tile> myCopy = new HashSet<>(this.tiles);
+
+        boolean iscontaining = true;
+        Iterator<Tile> iterator = node.getTiles().iterator();
+        while(iterator.hasNext()){
+            Tile tile = iterator.next();
+            
+            boolean hasCurrentTile = false;
+            Iterator<Tile> CopyIt = myCopy.iterator();
+            while(CopyIt.hasNext()){
+                Tile thisTile = CopyIt.next();
+                if (thisTile.getVal() == tile.getVal() && thisTile.getType() == tile.getType()) {
+                    hasCurrentTile = true;
+                    CopyIt.remove(); // Remove the tile to ensure we don't count it again
+                    break; // Found a matching tile, no need to check further
+                } else {
+                    hasCurrentTile = false;
+                }
+            }
+            iscontaining = iscontaining && hasCurrentTile;
+        }
+        return iscontaining;
     }
 }
