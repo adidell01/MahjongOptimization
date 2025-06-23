@@ -43,8 +43,10 @@ public class DrawAnalyzer {
     }
 
     private Set<DrawNode> nextSet(Set<DrawNode> set){
-        System.out.println(set.size());
+        //System.out.println(set.size());
         Set<DrawNode> res = new HashSet<>();
+        Set<DrawNode> backup = new HashSet<>();
+        backup.addAll(set);
         for(int i = 0; i < 34; i++){
             Tile tile = new Tile(i);
             Iterator<DrawNode> it = set.iterator();
@@ -61,13 +63,15 @@ public class DrawAnalyzer {
                     }
                 }
                 cur.add(toAdd);
-                Iterator<DrawNode> resit = res.iterator();
-                while(resit.hasNext()){
-                    DrawNode resNode = resit.next();
-                    if(resNode.contains(cur)){
-                        cur.add(resNode);
+                Iterator<DrawNode> backit = backup.iterator();
+                while(backit.hasNext()){
+                    DrawNode resNode = backit.next();
+                    if(toAdd.contains(resNode)){
+                        resNode.add(toAdd);
+                        //System.out.println("Connected " + resNode + " to " + toAdd);
                     }
                 }
+                //System.out.println("Node: " + toAdd);
                 res.add(toAdd);
             }
             for(DrawNode cur : remove){
@@ -81,7 +85,7 @@ public class DrawAnalyzer {
 
 class DrawNode{
     private Set<Tile> tiles = new HashSet<>();
-    private LinkedList<DrawNode> nbrs = new LinkedList<>();
+    LinkedList<DrawNode> nbrs = new LinkedList<>();
     private int[] unkowns;
 
     public DrawNode(Game game){
@@ -118,6 +122,11 @@ class DrawNode{
             amounts[tile.orderPos()]--;
         }
         return res;
+    }
+
+    @Override
+    public String toString(){
+        return this.tiles.toString();
     }
 
     public boolean contains(DrawNode node){
