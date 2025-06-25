@@ -5,11 +5,45 @@ import java.util.Set;
 
 public class DrawAnalyzer {
     DrawNode root;
+    Set<DrawNode> layer;
+    int layerDepth = 0;
     Game game;
 
     public DrawAnalyzer(Game game){
         this.game = game;
         root = new DrawNode(game);
+    }
+
+    public int getBestDiscard(){
+        LinkedList<DrawNode> nodes = new LinkedList<>();
+        LinkedList<Integer> amounts = new LinkedList<>();
+        int total = 0;
+        int[] discardValues = new int[14];
+        Iterator<DrawNode> it = layer.iterator();
+        while(it.hasNext()){
+            DrawNode cur = it.next();
+            int combinations = cur.getCombinaitons();
+            nodes.add(cur);
+            amounts.add(combinations);
+            total += combinations;
+        }
+        Hand copy = game.getPlayer().copyOf();
+        LinkedList<Tile> originalHand = new LinkedList<>();
+        originalHand.addAll(copy.getHand());
+        for(int i = 0; i < nodes.size(); i++){
+            copy.simDraw(nodes.get(i).getTiles());
+            for(Tile tile : copy.getPosDisc()){
+                if(originalHand.contains(tile)){
+                    discardValues[originalHand.indexOf(tile)] += amounts.get(i);
+                }
+            }
+            copy.simDiscard(nodes.get(i).getTiles());
+        }
+        int res = 0;
+        for(int i = 0; i < 14; i++){
+            res = Math.max(discardValues[res], discardValues[i]);
+        }
+        return res;
     }
 
     public void generateGraph(int depth){
@@ -27,19 +61,20 @@ public class DrawAnalyzer {
                 }
             }
         } */
+        this.layerDepth = depth;
         if(depth < 1)
             throw new IllegalArgumentException("Depth must be above 0");
-        Set<DrawNode> set = new HashSet<>();
+        layer = new HashSet<>();
         for(int i = 0; i < 34; i++){
             DrawNode cur = new DrawNode(game, Tile.tileAt(i));
             root.add(cur);
-            set.add(cur);
+            layer.add(cur);
         }
         while(depth > 1){
-            set = nextSet(set);
+            layer = nextSet(layer);
             depth--;
         }
-        System.out.println(set.size());
+        System.out.println(layer.size());
     }
 
     private Set<DrawNode> nextSet(Set<DrawNode> set){

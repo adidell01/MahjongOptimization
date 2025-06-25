@@ -21,6 +21,7 @@ public class Hand {
     private Map<Tile, TileNode> triToNode = new HashMap<>();
     private Map<Tile, TileNode> seqToNode = new HashMap<>();
     private LinkedList<Tile> discards = new LinkedList<>();
+    private Set<Tile> posDisc = new HashSet<>();
 
     private boolean DEBUG = false;
     /**
@@ -99,6 +100,20 @@ public class Hand {
         return discardTile;
     }
 
+    public void simDiscard(Set<Tile> discards){
+        for(Tile tile : discards){
+            simDiscard(this.hand.indexOf(tile));
+        }
+    }
+
+    public void simDraw(Set<Tile> draws){
+        for(Tile tile : draws){
+            softDraw(tile);
+        }
+        findGroups();
+        getShanten();
+    }
+
     /**
      *                                  Simulates drawing the specified Tile, adding it to the hand.
      * @param tile                      The to-be-drawn tile.
@@ -154,6 +169,10 @@ public class Hand {
         return copy;
     }
 
+    public Set<Tile> getPosDisc(){
+        return this.posDisc;
+    }
+
     private void softDraw(Tile curTile){
         TileNode curTriNode = new TileNode(curTile);
         TileNode curSeqNode = new TileNode(curTile);
@@ -179,10 +198,13 @@ public class Hand {
     
     private void setShanten(){
         this.shanten = 99;
+        this.posDisc.addAll(hand);
         if (pairs.isEmpty()){
             int shanten = 8;
+            int biggestGroupSize = 0;
             Set<Group> newSet = new HashSet<Group>();
             Set<Group> oldSet = new HashSet<Group>();
+            Set<Group> concider = oldSet;
             for(Group group : this.groups)
                 oldSet.add(group);
 
@@ -192,12 +214,16 @@ public class Hand {
                             Group group = new Group(baseGroup, oldGroup);
                             newSet.add(group);
                             shanten = Math.min(shanten, 10 - group.get().length);
+                            biggestGroupSize = Math.max(biggestGroupSize, group.get().length);
                             if(DEBUG){
                                 System.out.println("Candidate: " + shanten + ", Group: " + group);
                             }
                     }
                 }
                 oldSet.remove(baseGroup);
+            }
+            if(!newSet.isEmpty()){
+                concider = newSet;
             }
             oldSet = newSet;
             newSet = new HashSet<Group>();
@@ -211,11 +237,15 @@ public class Hand {
                             Group group = new Group(baseGroup, oldGroup);
                             newSet.add(group);
                             shanten = Math.min(shanten, 8 + i - group.get().length);
+                            biggestGroupSize = Math.max(biggestGroupSize, group.get().length);
                             if(DEBUG){
                                 System.out.println("Candidate: " + shanten + ", Group: " + group);
                             }
                         }
                     }
+                }
+                if(!newSet.isEmpty()){
+                    concider = newSet;
                 }
                 oldSet = newSet;
                 newSet = new HashSet<Group>();
@@ -225,17 +255,30 @@ public class Hand {
 
             for(Group group : newSet){
                 shanten = Math.min(13 - group.get().length, shanten);
+                biggestGroupSize = Math.max(biggestGroupSize, group.get().length);
                     if(DEBUG){
                         System.out.println("Candidate: " + shanten + ", Group: " + group);
                     }
             }
             this.shanten = Math.max(shanten, 1);
 
+            Set<Tile> essential = new HashSet<>();
+            essential.addAll(this.posDisc);
+            for(Group group : concider){
+            if(group.get().length < biggestGroupSize){
+                    continue;
+                }
+                essential.retainAll(Arrays.asList(group.get()));
+            }
+            this.posDisc.removeAll(essential);
+
         } else {
             for (Group pair : pairs){
                 int shanten = 7;
+                int biggestGroupSize = 0;
                 Set<Group> newSet = new HashSet<Group>();
                 Set<Group> oldSet = new HashSet<Group>();
+                Set<Group> concider = oldSet;
                 oldSet.add(pair);
                 if(DEBUG)
                     System.out.println(oldSet);
@@ -247,11 +290,15 @@ public class Hand {
                                 Group group = new Group(baseGroup, oldGroup);
                                 newSet.add(group);
                                 shanten = Math.min(shanten, 8 + i - group.get().length);
+                                biggestGroupSize = Math.max(biggestGroupSize, group.get().length);
                                 if(DEBUG){
                                     System.out.println("Candidate: " + shanten + ", Group: " + group);
                                 }
                             }
                         }
+                    }
+                    if(!newSet.isEmpty()){
+                        concider = newSet;
                     }
                     oldSet = newSet;
                     newSet = new HashSet<Group>();
@@ -261,11 +308,22 @@ public class Hand {
 
                 for(Group group : newSet){
                     shanten = Math.min(13 - group.get().length, shanten);
+                    biggestGroupSize = Math.max(biggestGroupSize, group.get().length);
                     if(DEBUG){
                         System.out.println("Candidate: " + shanten + ", Group: " + group);
                     }
                 }
                 this.shanten = Math.min(shanten, this.shanten);
+
+                Set<Tile> essential = new HashSet<>();
+                essential.addAll(this.posDisc);
+                for(Group group : concider){
+                    if(group.get().length < biggestGroupSize){
+                        continue;
+                    }
+                    essential.retainAll(Arrays.asList(group.get()));
+                }
+                this.posDisc.removeAll(essential);
             }
         }
     }
