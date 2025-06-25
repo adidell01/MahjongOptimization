@@ -1,13 +1,17 @@
 import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
+        Random randomizer = new Random();
         Scanner scanner = new Scanner(System.in);
         System.out.println("Choose between playing manually or using the analyzer:");
         System.out.println("1: Play manually");
         System.out.println("2: Use analyzer");
         int choice = scanner.nextInt();
+        long time = System.nanoTime();
+        long totalTime = System.nanoTime();
         if (choice == 1) {
             System.out.println("\nSelect starting player (0, 1, 2, 3(player))");
             Game game = new Game(scanner.nextInt());
@@ -15,7 +19,6 @@ public class Main {
             System.out.println("Shanten: " + game.getPlayer().getShanten());
             String command;
             boolean showShanten = true;
-            long time = System.nanoTime();
             DrawAnalyzer analyzers = new DrawAnalyzer(game);
             analyzers.generateGraph(3);
             System.out.println();
@@ -103,17 +106,29 @@ public class Main {
             int analyzerChoice = scanner.nextInt();
             System.out.println("Graph depth? (Enter a positive integer)");
             int depth = scanner.nextInt();
-            System.out.println("Graph width? (Enter a positive integer)");
-            int width = scanner.nextInt();
             if (analyzerChoice == 1) {
+                totalTime = System.nanoTime();
                 for (int i = 0; i < numGames; i++) {
-                    Game game = new Game(2);
+                    Game game = new Game(randomizer.nextInt(4));
+                    long gameTime = System.nanoTime();
                     DrawAnalyzer drawAnalyzer = new DrawAnalyzer(game);
-
-                    
+                    drawAnalyzer.generateGraph(depth);
+                    long genTime = System.nanoTime();
+                    time = System.nanoTime();
+                    while (game.getPlayer().getShanten() != 0 && game.discard(drawAnalyzer.getBestDiscard())){
+                        System.out.println("Time: " + (double) (System.nanoTime() - time) / 1000000000);
+                        System.out.println(game.getPlayer().getHand().toString());
+                        System.out.println("Shanten: " + game.getPlayer().getShanten());
+                        time = System.nanoTime();
+                    }
+                    System.out.println("Graph generation time: " + (double) (genTime - gameTime) / 1000000000);
+                    System.out.println("Game time: " + (double) (System.nanoTime() - gameTime) / 1000000000);
                 }
+                System.out.println("Total time: " + (double) (System.nanoTime() - totalTime) / 1000000000);
 
             } else if (analyzerChoice == 2) {
+                System.out.println("Graph width? (Enter a positive integer)");
+                int width = scanner.nextInt();
                 for (int i = 0; i < numGames; i++) {
 
                     Game game = new Game(2);
@@ -132,6 +147,8 @@ public class Main {
                         game.discard(indexToRemove);
                         
                         rootNode = new Node(game);
+                        System.out.println(game.getPlayer().getHand().toString());
+                        System.out.println("Shanten: " + game.getPlayer().getShanten());
                     }
                 }
             } else {

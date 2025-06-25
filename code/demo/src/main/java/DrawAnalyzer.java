@@ -41,7 +41,8 @@ public class DrawAnalyzer {
         }
         int res = 0;
         for(int i = 0; i < 14; i++){
-            res = Math.max(discardValues[res], discardValues[i]);
+            if(discardValues[res] < discardValues[i])
+            res = i;
         }
         return res;
     }
