@@ -1,4 +1,3 @@
-import java.util.InputMismatchException;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
@@ -78,6 +77,7 @@ public class Main {
                 analyzer.generateGraph(depth, width);
                 System.out.println("Graph generated.");
                 analyzer.printRootChildren();
+                System.out.println("Best discard: " + analyzer.getBestDiscard());
                 }
                 catch(NoSuchElementException e){
                     System.out.println("Please enter a depth an width for \"analyze\".");

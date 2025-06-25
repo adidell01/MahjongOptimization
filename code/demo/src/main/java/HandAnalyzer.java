@@ -81,4 +81,27 @@ public class HandAnalyzer {
     public void printRootChildren() {
         System.out.println("#Children of root node: " + rootNode.getChildren().size());
     }
+
+    public Node getRootNode() {
+        return rootNode;
+    }
+
+    public Tile getBestDiscard() {
+        Node bestNode = this.rootNode;
+        double bestProb = 0.0;
+
+        for (Node child : rootNode.getChildren()) {
+            if (child.getShanten() <= bestNode.getShanten() && child.getProb() > bestProb) {
+                bestProb = child.getProb();
+                bestNode = child;
+                
+            }
+        }
+        if (bestNode == this.rootNode) {
+            return null; // No valid child found
+        }
+        
+        Tile bestDiscard  = bestNode.getGame().getPlayer().getDiscardsList().getLast();
+        return bestDiscard; // Returns the node with the highest probability
+    }
 }

@@ -134,6 +134,10 @@ public class Hand {
         System.out.println(this.discards);
     }
 
+    public LinkedList<Tile> getDiscardsList(){
+        return this.discards;
+    }
+
     public Hand copyOf(){
         Hand copy = new Hand();
         for(int i = 0; i < this.hand.size(); i++){
