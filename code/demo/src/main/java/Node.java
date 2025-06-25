@@ -6,7 +6,7 @@ public class Node {
     private Set<Node> children = new HashSet<>();
     private double prob = 1.0;
     private int shanten;
-    
+
     public Node(Game game) {
         this.game = game;
         this.shanten = game.getPlayer().getShanten();
@@ -24,7 +24,7 @@ public class Node {
 
     public void addChild(Node child) {
         children.add(child);
-    }   
+    }
 
     public void removeChild(Node child) {
         children.remove(child);
@@ -46,4 +46,3 @@ public class Node {
         return shanten;
     }
 }
-

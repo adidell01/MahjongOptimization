@@ -28,16 +28,17 @@ public class HandAnalyzer {
                 if (counter == depth) {
                     break; // Stop processing if we reached the desired depth
                 }
-                
+
                 LinkedList<Tile> myList = currentNode.game.getTiles();
                 int widthCounter = width;
-                
-                /* calculate the probability of a draw for every tile in myList
+
+                /*
+                 * calculate the probability of a draw for every tile in myList
                  * then generate a copy of the current game for every tile in myList
                  * and add it as a child to the current node, with the probability as weight
                  */
                 for (Tile tile : myList) {
-                    if (widthCounter <= 0){
+                    if (widthCounter <= 0) {
                         break;
                     }
                     for (int j = 0; j < 14; j++) {
@@ -45,7 +46,8 @@ public class HandAnalyzer {
                         gameCopy.getTiles().remove(tile);
                         gameCopy.getPlayer().discard(j);
                         gameCopy.getPlayer().draw(tile);
-                        Node childNode = new Node(gameCopy, 1.0 / (myList.size()*14)); // Assuming equal probability for simplicity
+                        Node childNode = new Node(gameCopy, 1.0 / (myList.size() * 14)); // Assuming equal probability
+                                                                                         // for simplicity
                         currentNode.addChild(childNode);
                     }
                     widthCounter--;
@@ -56,11 +58,18 @@ public class HandAnalyzer {
                 while (iterator.hasNext()) {
                     Node child = iterator.next();
                     boolean alreadyExists = false;
-                    /* make sure that no node that generates the same hand exists on this level of depth */
+                    /*
+                     * make sure that no node that generates the same hand exists on this level of
+                     * depth
+                     */
                     for (Node existingChild : nodesNextDepth) {
-                        if (existingChild.getGame().getPlayer().getHand().toString().equals(child.getGame().getPlayer().getHand().toString())) { //child's hand already exists
+                        if (existingChild.getGame().getPlayer().getHand().toString()
+                                .equals(child.getGame().getPlayer().getHand().toString())) { // child's hand already
+                                                                                             // exists
                             currentNode.addChild(existingChild); // replace child with existing child
-                            existingChild.setProb(existingChild.getProb() + child.getProb()); // increase the probability of the existing child
+                            existingChild.setProb(existingChild.getProb() + child.getProb()); // increase the
+                                                                                              // probability of the
+                                                                                              // existing child
                             iterator.remove(); // remove the child from the current node's children
                             alreadyExists = true; // no need to check further, we found a match
                         }
@@ -77,7 +86,7 @@ public class HandAnalyzer {
 
         return; // the Graph has been generated, now it can be used for further analysis
     }
-    
+
     public void printRootChildren() {
         System.out.println("#Children of root node: " + rootNode.getChildren().size());
     }
@@ -94,14 +103,14 @@ public class HandAnalyzer {
             if (child.getShanten() <= bestNode.getShanten() && child.getProb() > bestProb) {
                 bestProb = child.getProb();
                 bestNode = child;
-                
+
             }
         }
         if (bestNode == this.rootNode) {
             return null; // No valid child found
         }
-        
-        Tile bestDiscard  = bestNode.getGame().getPlayer().getDiscardsList().getLast();
+
+        Tile bestDiscard = bestNode.getGame().getPlayer().getDiscardsList().getLast();
         return bestDiscard; // Returns the node with the highest probability
     }
 }
