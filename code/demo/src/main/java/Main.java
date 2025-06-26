@@ -147,6 +147,10 @@ public class Main {
                         //System.out.println("-----------------------------");
                         //System.out.println("Best discard: " + bestDiscard.toString());
                         //System.out.println("------------------------------");
+                        if (bestDiscard == null) {
+                            bestDiscard = game.getPlayer().getHand().get(13);
+                        }
+                        
                         int indexToRemove = -1;
                         for (int j = 0; j < game.getPlayer().getHand().size(); j++) {
                             if (game.getPlayer().getHand().get(j).toString().equals(bestDiscard.toString())) {
