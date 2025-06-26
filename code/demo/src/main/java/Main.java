@@ -107,16 +107,17 @@ public class Main {
 
                     totalTimes[0] += (double) (genTime - gameTime) / 1000000000;
                     totalShantens[0] += game.getPlayer().getShanten();
-                    int count = 1;
+                    int count = 0;
 
                     time = System.nanoTime();
                     while (game.getPlayer().getShanten() != 0 && game.discard(drawAnalyzer.getBestDiscard())) {
                         //System.out.println("Time: " + (double) (System.nanoTime() - time) / 1000000000);
                         //System.out.println(game.getPlayer().getHand().toString());
                         //System.out.println("Shanten: " + game.getPlayer().getShanten());
+
+                        count++;
                         totalTimes[count] += (double) (System.nanoTime() - time) / 1000000000;
                         totalShantens[count] += game.getPlayer().getShanten();
-                        count++;
                         time = System.nanoTime();
                     }
                     if(game.getPlayer().getShanten() == 0){
@@ -136,7 +137,7 @@ public class Main {
 
                     totalTimes[0] += 0;
                     totalShantens[0] += game.getPlayer().getShanten();
-                    int count = 1;
+                    int count = 0;
 
                     time = System.nanoTime();
                     while (game.getPlayer().getShanten() > 0 && game.getTiles().size() > 0) {
@@ -159,9 +160,9 @@ public class Main {
                         }
                         game.discard(indexToRemove);
 
+                        count++;
                         totalTimes[count] += (double) (System.nanoTime() - time) / 1000000000;
                         totalShantens[count] += game.getPlayer().getShanten();
-                        count++;
                         time = System.nanoTime();
 
                         //System.out.println(game.getPlayer().getHand().toString());
