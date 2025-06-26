@@ -210,13 +210,13 @@ public class Hand {
     private void setShanten() {
         this.shanten = 99;
         this.posDisc.clear();
-        this.posDisc.addAll(hand);
+        this.posDisc.addAll(this.hand);
         if (pairs.isEmpty()){
             int shanten = 8;
             int biggestGroupSize = 0;
             Set<Group> newSet = new HashSet<Group>();
             Set<Group> oldSet = new HashSet<Group>();
-            Set<Group> concider = oldSet;
+            Set<Group> consider = oldSet;
             for(Group group : this.groups)
                 oldSet.add(group);
 
@@ -235,7 +235,7 @@ public class Hand {
                 oldSet.remove(baseGroup);
             }
             if(!newSet.isEmpty()){
-                concider = newSet;
+                consider = newSet;
             }
             oldSet = newSet;
             newSet = new HashSet<Group>();
@@ -257,7 +257,7 @@ public class Hand {
                     }
                 }
                 if(!newSet.isEmpty()){
-                    concider = newSet;
+                    consider = newSet;
                 }
                 oldSet = newSet;
                 newSet = new HashSet<Group>();
@@ -276,25 +276,27 @@ public class Hand {
 
             Set<Tile> essential = new HashSet<>();
             essential.addAll(this.posDisc);
-            for(Group group : concider){
-            if(group.get().length < biggestGroupSize){
-                    continue;
+            for(Group group : consider){
+                if(group.get().length == biggestGroupSize){
+                    System.out.println(essential);
+                    System.out.println(Arrays.asList(group.get()));
+                    essential.retainAll(Arrays.asList(group.get()));
+                    System.out.println(essential);
                 }
-                essential.retainAll(Arrays.asList(group.get()));
             }
             this.posDisc.removeAll(essential);
 
         } else {
+            int biggestGroupSize = 0;
+            Set<Group> consider = new HashSet<>();
             for (Group pair : pairs) {
                 int shanten = 7;
-                int biggestGroupSize = 0;
                 Set<Group> newSet = new HashSet<Group>();
                 Set<Group> oldSet = new HashSet<Group>();
-                Set<Group> concider = oldSet;
+                Set<Group> considersub = oldSet;
                 oldSet.add(pair);
                 if (DEBUG)
                     System.out.println(oldSet);
-
                 for (int i = 2; i <= 5; i++) {
                     for (Group baseGroup : this.groups) {
                         for (Group oldGroup : oldSet) {
@@ -310,7 +312,7 @@ public class Hand {
                         }
                     }
                     if(!newSet.isEmpty()){
-                        concider = newSet;
+                        considersub = newSet;
                     }
                     oldSet = newSet;
                     newSet = new HashSet<Group>();
@@ -327,17 +329,25 @@ public class Hand {
                 }
                 this.shanten = Math.min(shanten, this.shanten);
 
-                Set<Tile> essential = new HashSet<>();
-                essential.addAll(this.posDisc);
-                for(Group group : concider){
-                    if(group.get().length < biggestGroupSize){
-                        continue;
-                    }
-                    essential.retainAll(Arrays.asList(group.get()));
-                }
-                this.posDisc.removeAll(essential);
+                consider.addAll(considersub);
             }
+
+            Set<Tile> essential = new HashSet<>();
+            essential.addAll(this.posDisc);
+            for(Group group : consider){
+                if(group.get().length == biggestGroupSize){
+                    //System.out.println(essential);
+                    //System.out.println(Arrays.asList(group.get()));
+                    essential.retainAll(Arrays.asList(group.get()));
+                    //System.out.println(essential);
+                }
+            }
+            //System.out.println(this.posDisc);
+            this.posDisc.removeAll(essential);
+            //System.out.println(this.posDisc);
+            //System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         }
+        System.out.println("Possible Discards: " + this.posDisc);
     }
     
     private void findGroups(){
