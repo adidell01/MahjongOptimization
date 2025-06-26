@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -85,6 +86,10 @@ public class Main {
         } else if (choice == 2) {
             System.out.println("How many games do you want to analyze? (Enter a positive integer)");
             int numGames = scanner.nextInt();
+            int[] totalShantens = new int[18];
+            double[] totalTimes = new double[18];
+            int[] totalreadyHands = new int[18];
+            int readyHands = 0;
             System.out.println("select analyzer type:");
             System.out.println("1: DrawAnalyzer");
             System.out.println("2: HandAnalyzer");
@@ -99,15 +104,27 @@ public class Main {
                     DrawAnalyzer drawAnalyzer = new DrawAnalyzer(game);
                     drawAnalyzer.generateGraph(depth);
                     long genTime = System.nanoTime();
+
+                    totalTimes[0] += (double) (genTime - gameTime) / 1000000000;
+                    totalShantens[0] += game.getPlayer().getShanten();
+                    int count = 1;
+
                     time = System.nanoTime();
                     while (game.getPlayer().getShanten() != 0 && game.discard(drawAnalyzer.getBestDiscard())) {
-                        System.out.println("Time: " + (double) (System.nanoTime() - time) / 1000000000);
-                        System.out.println(game.getPlayer().getHand().toString());
-                        System.out.println("Shanten: " + game.getPlayer().getShanten());
+                        //System.out.println("Time: " + (double) (System.nanoTime() - time) / 1000000000);
+                        //System.out.println(game.getPlayer().getHand().toString());
+                        //System.out.println("Shanten: " + game.getPlayer().getShanten());
+                        totalTimes[count] += (double) (System.nanoTime() - time) / 1000000000;
+                        totalShantens[count] += game.getPlayer().getShanten();
+                        count++;
                         time = System.nanoTime();
                     }
-                    System.out.println("Graph generation time: " + (double) (genTime - gameTime) / 1000000000);
-                    System.out.println("Game time: " + (double) (System.nanoTime() - gameTime) / 1000000000);
+                    if(game.getPlayer().getShanten() == 0){
+                        readyHands++;
+                        totalreadyHands[count]++;
+                    }
+                    //System.out.println("Graph generation time: " + (double) (genTime - gameTime) / 1000000000);
+                    //System.out.println("Game time: " + (double) (System.nanoTime() - gameTime) / 1000000000);
                 }
                 System.out.println("Total time: " + (double) (System.nanoTime() - totalTime) / 1000000000);
 
@@ -117,14 +134,19 @@ public class Main {
                     Game game = new Game(randomizer.nextInt(4));
                     System.out.println(game.getPlayer().getHand().toString());
 
+                    totalTimes[0] += 0;
+                    totalShantens[0] += game.getPlayer().getShanten();
+                    int count = 1;
+
+                    time = System.nanoTime();
                     while (game.getPlayer().getShanten() > 0 && game.getTiles().size() > 0) {
                         HandAnalyzer handAnalyzer = new HandAnalyzer(game);
 
                         Tile bestDiscard = handAnalyzer.analyze();
 
-                        System.out.println("-----------------------------");
-                        System.out.println("Best discard: " + bestDiscard.toString());
-                        System.out.println("------------------------------");
+                        //System.out.println("-----------------------------");
+                        //System.out.println("Best discard: " + bestDiscard.toString());
+                        //System.out.println("------------------------------");
                         int indexToRemove = -1;
                         for (int j = 0; j < game.getPlayer().getHand().size(); j++) {
                             if (game.getPlayer().getHand().get(j).toString().equals(bestDiscard.toString())) {
@@ -133,12 +155,33 @@ public class Main {
                         }
                         game.discard(indexToRemove);
 
-                        System.out.println(game.getPlayer().getHand().toString());
-                        System.out.println("Shanten: " + game.getPlayer().getShanten());
+                        totalTimes[count] += (double) (System.nanoTime() - time) / 1000000000;
+                        totalShantens[count] += game.getPlayer().getShanten();
+                        count++;
+                        time = System.nanoTime();
+
+                        //System.out.println(game.getPlayer().getHand().toString());
+                        //System.out.println("Shanten: " + game.getPlayer().getShanten());
+                    }
+                    if(game.getPlayer().getShanten() == 0){
+                        readyHands++;
+                        totalreadyHands[count]++;
                     }
                 }
             } else {
                 System.out.println("Invalid analyzer choice. Please restart the program and choose either 1 or 2.");
+            }
+            if(analyzerChoice == 1 || analyzerChoice == 2){
+                int curNumGames = numGames;
+                for(int i = 0; i < 18; i++){
+                    totalShantens[i] /= curNumGames;
+                    totalTimes[i] /= curNumGames;
+                    curNumGames -= totalreadyHands[i];
+                }
+                System.out.println("Games Played: " + numGames + "\nReady hands: " + readyHands);
+                System.out.println("Average Shanten per Round: " + Arrays.toString(totalShantens));
+                System.out.println("Average Time per Round: " + Arrays.toString(totalTimes));
+                System.out.println("Total Ready hand per Round: " + Arrays.toString(totalreadyHands));
             }
         } else {
             System.out.println("Invalid choice. Please restart the program and choose either 1 or 2.");

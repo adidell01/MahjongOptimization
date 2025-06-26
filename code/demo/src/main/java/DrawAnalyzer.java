@@ -11,10 +11,14 @@ public class DrawAnalyzer {
 
     public DrawAnalyzer(Game game) {
         this.game = game;
-        root = new DrawNode(game);
+        this.root = new DrawNode(game);
     }
 
     public int getBestDiscard(){
+        if(this.game.getTiles().size() / 4 < this.layerDepth){
+            this.layer.clear();
+            this.layer.addAll(this.root.nbrs);
+        }
         LinkedList<DrawNode> nodes = new LinkedList<>();
         LinkedList<Integer> amounts = new LinkedList<>();
         int total = 0;
