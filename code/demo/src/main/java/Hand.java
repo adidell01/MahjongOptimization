@@ -119,7 +119,7 @@ public class Hand {
             softDraw(tile);
         }
         findGroups();
-        getShanten();
+        setShanten();
     }
 
     /**
@@ -209,6 +209,7 @@ public class Hand {
 
     private void setShanten() {
         this.shanten = 99;
+        this.posDisc.clear();
         this.posDisc.addAll(hand);
         if (pairs.isEmpty()){
             int shanten = 8;

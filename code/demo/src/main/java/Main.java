@@ -1,4 +1,3 @@
-import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -74,20 +73,6 @@ public class Main {
                         showShanten = true;
                         System.out.println("Shanten enabled");
                     }
-                } else if (command.equals("analyze")) {
-                    try {
-                        int depth = scanner.nextInt();
-                        int width = scanner.nextInt();
-                        Node rootNode = new Node(game);
-                        HandAnalyzer analyzer = new HandAnalyzer(rootNode);
-                        System.out.println("Generating graph...");
-                        analyzer.generateGraph(depth, width);
-                        System.out.println("Graph generated.");
-                        analyzer.printRootChildren();
-                        System.out.println("Best discard: " + analyzer.getBestDiscard());
-                    } catch (NoSuchElementException e) {
-                        System.out.println("Please enter a depth an width for \"analyze\".");
-                    }
                 } else if (!command.equals("exit")) {
                     System.out.println(
                             "discard <index>:\tDiscard tile at given index. Index must be number between 0 (left-most tile) and 13 (right-most tile)");
@@ -104,9 +89,9 @@ public class Main {
             System.out.println("1: DrawAnalyzer");
             System.out.println("2: HandAnalyzer");
             int analyzerChoice = scanner.nextInt();
-            System.out.println("Graph depth? (Enter a positive integer)");
-            int depth = scanner.nextInt();
             if (analyzerChoice == 1) {
+                System.out.println("Graph depth? (Enter a positive integer)");
+                int depth = scanner.nextInt();
                 totalTime = System.nanoTime();
                 for (int i = 0; i < numGames; i++) {
                     Game game = new Game(randomizer.nextInt(4));
@@ -115,7 +100,7 @@ public class Main {
                     drawAnalyzer.generateGraph(depth);
                     long genTime = System.nanoTime();
                     time = System.nanoTime();
-                    while (game.getPlayer().getShanten() != 0 && game.discard(drawAnalyzer.getBestDiscard())){
+                    while (game.getPlayer().getShanten() != 0 && game.discard(drawAnalyzer.getBestDiscard())) {
                         System.out.println("Time: " + (double) (System.nanoTime() - time) / 1000000000);
                         System.out.println(game.getPlayer().getHand().toString());
                         System.out.println("Shanten: " + game.getPlayer().getShanten());
@@ -127,17 +112,19 @@ public class Main {
                 System.out.println("Total time: " + (double) (System.nanoTime() - totalTime) / 1000000000);
 
             } else if (analyzerChoice == 2) {
-                System.out.println("Graph width? (Enter a positive integer)");
-                int width = scanner.nextInt();
                 for (int i = 0; i < numGames; i++) {
 
-                    Game game = new Game(2);
-                    Node rootNode = new Node(game);
+                    Game game = new Game(randomizer.nextInt(4));
+                    System.out.println(game.getPlayer().getHand().toString());
 
-                    while (rootNode.getShanten() > 0 && game.getTiles().size() > 0) {
-                        HandAnalyzer handAnalyzer = new HandAnalyzer(rootNode);
-                        handAnalyzer.generateGraph(depth, width);
-                        Tile bestDiscard = handAnalyzer.getBestDiscard();
+                    while (game.getPlayer().getShanten() > 0 && game.getTiles().size() > 0) {
+                        HandAnalyzer handAnalyzer = new HandAnalyzer(game);
+
+                        Tile bestDiscard = handAnalyzer.analyze();
+
+                        System.out.println("-----------------------------");
+                        System.out.println("Best discard: " + bestDiscard.toString());
+                        System.out.println("------------------------------");
                         int indexToRemove = -1;
                         for (int j = 0; j < game.getPlayer().getHand().size(); j++) {
                             if (game.getPlayer().getHand().get(j).toString().equals(bestDiscard.toString())) {
@@ -145,8 +132,7 @@ public class Main {
                             }
                         }
                         game.discard(indexToRemove);
-                        
-                        rootNode = new Node(game);
+
                         System.out.println(game.getPlayer().getHand().toString());
                         System.out.println("Shanten: " + game.getPlayer().getShanten());
                     }
