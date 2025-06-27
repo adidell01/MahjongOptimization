@@ -79,7 +79,7 @@ public class DrawAnalyzer {
             layer = nextSet(layer);
             depth--;
         }
-        System.out.println(layer.size());
+        //System.out.println(layer.size());
     }
 
     private Set<DrawNode> nextSet(Set<DrawNode> set) {

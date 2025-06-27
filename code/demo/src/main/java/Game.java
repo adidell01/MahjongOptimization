@@ -154,9 +154,9 @@ public class Game {
                 return false;
             currentPlayerDraw();
         }
-        System.out.println("Discarded Tiles:");
-        getDiscards();
-        System.out.println("Remaning Amount: " + tiles.size() + "\n");
+        //System.out.println("Discarded Tiles:");
+        //getDiscards();
+        //System.out.println("Remaning Amount: " + tiles.size() + "\n");
         return true;
     }
 

@@ -278,10 +278,10 @@ public class Hand {
             essential.addAll(this.posDisc);
             for(Group group : consider){
                 if(group.get().length == biggestGroupSize){
-                    System.out.println(essential);
-                    System.out.println(Arrays.asList(group.get()));
+                    //System.out.println(essential);
+                    //System.out.println(Arrays.asList(group.get()));
                     essential.retainAll(Arrays.asList(group.get()));
-                    System.out.println(essential);
+                    //System.out.println(essential);
                 }
             }
             this.posDisc.removeAll(essential);
@@ -347,7 +347,7 @@ public class Hand {
             //System.out.println(this.posDisc);
             //System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         }
-        System.out.println("Possible Discards: " + this.posDisc);
+        //System.out.println("Possible Discards: " + this.posDisc);
     }
     
     private void findGroups(){

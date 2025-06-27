@@ -88,7 +88,8 @@ public class Main {
             int numGames = scanner.nextInt();
             int[] totalShantens = new int[18];
             double[] totalTimes = new double[18];
-            int[] totalreadyHands = new int[18];
+            int[] totalWinHands = new int[18];
+            double avgTime = 0;
             int readyHands = 0;
             System.out.println("select analyzer type:");
             System.out.println("1: DrawAnalyzer");
@@ -110,7 +111,7 @@ public class Main {
                     int count = 0;
 
                     time = System.nanoTime();
-                    while (game.getPlayer().getShanten() != 0 && game.discard(drawAnalyzer.getBestDiscard())) {
+                    while (game.getPlayer().getShanten() > -1 && game.discard(drawAnalyzer.getBestDiscard())) {
                         //System.out.println("Time: " + (double) (System.nanoTime() - time) / 1000000000);
                         //System.out.println(game.getPlayer().getHand().toString());
                         //System.out.println("Shanten: " + game.getPlayer().getShanten());
@@ -120,12 +121,13 @@ public class Main {
                         totalShantens[count] += game.getPlayer().getShanten();
                         time = System.nanoTime();
                     }
-                    if(game.getPlayer().getShanten() == 0){
+                    if(game.getPlayer().getShanten() == -1){
                         readyHands++;
-                        totalreadyHands[count]++;
+                        totalWinHands[count]++;
                     }
                     //System.out.println("Graph generation time: " + (double) (genTime - gameTime) / 1000000000);
                     //System.out.println("Game time: " + (double) (System.nanoTime() - gameTime) / 1000000000);
+                    System.out.println("Game " + (i + 1) + " out of " + numGames + " completed");
                 }
                 System.out.println("Total time: " + (double) (System.nanoTime() - totalTime) / 1000000000);
 
@@ -133,14 +135,15 @@ public class Main {
                 for (int i = 0; i < numGames; i++) {
 
                     Game game = new Game(randomizer.nextInt(4));
-                    System.out.println(game.getPlayer().getHand().toString());
+                    //System.out.println(game.getPlayer().getHand().toString());
 
                     totalTimes[0] += 0;
                     totalShantens[0] += game.getPlayer().getShanten();
                     int count = 0;
+                    boolean notEmpty = true;
 
                     time = System.nanoTime();
-                    while (game.getPlayer().getShanten() > 0 && game.getTiles().size() > 0) {
+                    while (game.getPlayer().getShanten() > -1 && notEmpty) {
                         HandAnalyzer handAnalyzer = new HandAnalyzer(game);
 
                         Tile bestDiscard = handAnalyzer.analyze();
@@ -158,19 +161,21 @@ public class Main {
                                 indexToRemove = j;
                             }
                         }
-                        game.discard(indexToRemove);
+                        notEmpty = game.discard(indexToRemove);
 
-                        count++;
-                        totalTimes[count] += (double) (System.nanoTime() - time) / 1000000000;
-                        totalShantens[count] += game.getPlayer().getShanten();
-                        time = System.nanoTime();
+                        if(notEmpty){
+                            count++;
+                            totalTimes[count] += (double) (System.nanoTime() - time) / 1000000000;
+                            totalShantens[count] += game.getPlayer().getShanten();
+                            time = System.nanoTime();
+                        }
 
                         //System.out.println(game.getPlayer().getHand().toString());
                         //System.out.println("Shanten: " + game.getPlayer().getShanten());
                     }
-                    if(game.getPlayer().getShanten() == 0){
+                    if(game.getPlayer().getShanten() == -1){
                         readyHands++;
-                        totalreadyHands[count]++;
+                        totalWinHands[count]++;
                     }
                 }
             } else {
@@ -181,12 +186,13 @@ public class Main {
                 for(int i = 0; i < 18; i++){
                     totalShantens[i] /= curNumGames;
                     totalTimes[i] /= curNumGames;
-                    curNumGames -= totalreadyHands[i];
+                    curNumGames -= totalWinHands[i];
+                    avgTime += totalTimes[i];
                 }
-                System.out.println("Games Played: " + numGames + "\nReady hands: " + readyHands);
+                System.out.println("Games Played: " + numGames + "\nReady hands: " + readyHands + "\nAverage discard Time: " + avgTime/18);
                 System.out.println("Average Shanten per Round: " + Arrays.toString(totalShantens));
                 System.out.println("Average Time per Round: " + Arrays.toString(totalTimes));
-                System.out.println("Total Ready hand per Round: " + Arrays.toString(totalreadyHands));
+                System.out.println("Total Ready hand per Round: " + Arrays.toString(totalWinHands));
             }
         } else {
             System.out.println("Invalid choice. Please restart the program and choose either 1 or 2.");
