@@ -132,6 +132,7 @@ public class Main {
                 System.out.println("Total time: " + (double) (System.nanoTime() - totalTime) / 1000000000);
 
             } else if (analyzerChoice == 2) {
+                totalTime = System.nanoTime();
                 for (int i = 0; i < numGames; i++) {
 
                     Game game = new Game(randomizer.nextInt(4));
@@ -178,6 +179,7 @@ public class Main {
                         totalWinHands[count]++;
                     }
                 }
+                System.out.println("Total time: " + (double) (System.nanoTime() - totalTime) / 1000000000);
             } else {
                 System.out.println("Invalid analyzer choice. Please restart the program and choose either 1 or 2.");
             }
